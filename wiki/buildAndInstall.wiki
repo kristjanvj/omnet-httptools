@@ -1,0 +1,15 @@
+#summary Build and installation instructions
+
+= Installation =
+
+First of all, get the latest version of the INET framework. Create a couple of directories under the INET root as ldss_tools and ldss_networks. Copy the sources into the directories.
+
+
+= Build =
+
+Run ./makemake from the INET root to make sure the makefiles are up-to-date. Then run make in the ldss_components directory, followed by a make for the INET framework.
+
+
+= Notes =
+
+The instructions given here work but are probably less than elegant. Input on better procedures for install and build would be greatly appreciated.
