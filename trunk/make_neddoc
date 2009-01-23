@@ -1,0 +1,2 @@
+#!/bin/bash
+opp_neddoc -o ./doc/neddoc -a -x -n
