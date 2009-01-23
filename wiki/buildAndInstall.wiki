@@ -1,14 +1,27 @@
 #summary Build and installation instructions
 
-= Installation =
+= Installation and build =
 
-First of all, get the latest version of the INET framework. Create a couple of directories under the INET root as ldss_tools and ldss_networks. Copy the sources into the directories.
+Note: The instructions are for a Linux system. 
 
+*Get the INET framework.* I am using version 20061020. Build according to the instructions
+{{{
+./makemake
+make
+}}}
+and try a few examples from Examples to see if everythin works according to plan.
 
-= Build =
+*Get the HttpTools source.* From within your INET directory, get the source from the svn repository by entering 
+{{{
+svn checkout http://omnet-httptools.googlecode.com/svn/trunk/ httptools
+}}}
 
-Run ./makemake from the INET root to make sure the makefiles are up-to-date. Then run make in the ldss_components directory, followed by a make for the INET framework.
+*Modify the makemakefiles file.* In your favorite editor, modify the _makemakefiles_ file in the INET root. Add the following lines to the end of the inetbase section:
+{{{
+cd httptools && $(MAKEMAKE) $(OPTS) -n -r $(ALL_INET_INCLUDES) -X Documentation -X Tests -X Examples 
+}}}
 
+*You will need to do a makemake and make again to build the INET framework with HttpTools
 
 = Notes =
 
