@@ -52,5 +52,6 @@ string htmlErrFromCode(int code);
 double safeatof(const char* strval, double defaultVal=0.0);
 int safeatoi(const char* strval, int defaultVal=0);
 int safeatobool(const char* strval, bool defaultVal=false);
+std::vector<std::string> splitFile(string fileName);
 
 #endif /* __httpUtils_H_ */
