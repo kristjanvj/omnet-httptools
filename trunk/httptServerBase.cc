@@ -407,9 +407,10 @@ void httptServerBase::readSiteDefinition(string file)
 
 	ifstream tracefilestream;
 	tracefilestream.open(file.c_str());
-	if(!tracefilestream.is_open())
+	if(tracefilestream.fail())
 		error("Could not open site definition file %s",file.c_str());
 
+	vector<string> siteFileSplit = splitFile(file);
 	string line;  
 	string key;
 	string htmlfile;
@@ -456,7 +457,7 @@ void httptServerBase::readSiteDefinition(string file)
 							  file.c_str(), linecount, line.c_str());
 				}
 				htmlfile=res[1];						
-				body=readHtmlBodyFile(htmlfile);
+				body=readHtmlBodyFile(htmlfile,siteFileSplit[0]); // Pass in the path of the definition file. Page defs are relative to that.
 				size=0;
 				if ( res.size()>2 )
 				{
@@ -510,16 +511,19 @@ void httptServerBase::readSiteDefinition(string file)
 	tracefilestream.close();
 }
 
-string httptServerBase::readHtmlBodyFile( string file )
+string httptServerBase::readHtmlBodyFile( string file, string path )
 {
-//	EV_DEBUG << "Reading HTML page definition file" << endl;
+	EV_DEBUG << "Reading HTML page definition file" << endl;
+
+	string filePath = path;
+	filePath += file;
 
 	string line;
 	string body="";
 	ifstream htmlfilestream;
-	htmlfilestream.open(file.c_str());
-	if(!htmlfilestream.is_open())
-		error("Could not open page definition file %s",file.c_str());
+	htmlfilestream.open(filePath.c_str());
+	if(htmlfilestream.fail())
+		error("Could not open page definition file '%s'",filePath.c_str());
 	while(!std::getline(htmlfilestream, line).eof())
 	{
 		line = trim(line);
