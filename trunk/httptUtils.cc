@@ -238,7 +238,38 @@ int safeatobool(const char* strval, bool defaultVal)
 	}
 }
 
+std::vector<std::string> splitFile(string fileName)
+{
+	string path="";
+	string file="";
+	string ext="";
 
+	int slashpos = fileName.rfind("/");
+	if ( slashpos==-1 )
+		slashpos = fileName.rfind("\\");
+	if ( slashpos!=-1 )
+	{
+		path = fileName.substr(0,slashpos+1);
+		fileName = fileName.substr(slashpos+1,fileName.size()-slashpos-1);
+	}
+
+	int dotpos = fileName.find(".");
+	if ( dotpos!=-1 ) 
+	{
+		ext = fileName.substr(dotpos+1,fileName.size()-dotpos-1);
+		file = fileName.substr(0,dotpos);
+	}
+	else
+	{
+		file = fileName;
+	}
+
+	std::vector<std::string> res;
+	res.push_back(path);
+	res.push_back(file);
+	res.push_back(ext);
+	return res;		
+}
 
 
 
