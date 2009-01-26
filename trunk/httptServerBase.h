@@ -104,7 +104,7 @@ class INET_API httptServerBase : public httptNodeBase
 		cMessage* handleReceivedMessage( cMessage *msg );
 		void registerWithController();
 		void readSiteDefinition(string file);
-		string readHtmlBodyFile( string file );
+		string readHtmlBodyFile( string file, string path );
 
 //	protected:
 //		virtual void httptServerBase::sendToClient( httptNodeBase *receiver, cMessage *message );
