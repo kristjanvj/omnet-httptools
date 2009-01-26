@@ -71,7 +71,7 @@ void httptBrowser::handleMessage(cMessage *msg)
 		{
 			// Handle errors. @todo hard error?
 			EV_WARNING << "No socket found for message " << msg->name() << endl;
-			delete msg;
+			delete msg;  // TODO: CHECK HANDLING HERE
 			return;
 		}
 		// Submit to the socket handler. Calls the TCPSocket::CallbackInterface methods.		
@@ -129,7 +129,7 @@ void httptBrowser::sendRequestsToServer( string www, MESSAGE_QUEUE_TYPE queue )
 
 void httptBrowser::socketEstablished(int connId, void *yourPtr)
 {
-    EV_DEBUG << "Socket established socket with id=" << connId << endl;
+    EV_DEBUG << "Socket with id " << connId << " established" << endl;
 
 	socketsOpened++;
 
@@ -151,10 +151,12 @@ void httptBrowser::socketEstablished(int connId, void *yourPtr)
 
 	// Send pending messages on the established socket.
 	cMessage *msg;
+	EV_DEBUG << "Proceeding to send messages on socket " << connId << endl;
 	while( sockdata->messageQueue.size()!=0 )
 	{
 		msg = sockdata->messageQueue.back();
 		sockdata->messageQueue.pop_back();
+		EV_DEBUG << "Submitting request " << msg->name() << " to socket " << connId << endl;
 		socket->send(msg);
 		sockdata->pending++;
 	}
@@ -162,7 +164,7 @@ void httptBrowser::socketEstablished(int connId, void *yourPtr)
 
 void httptBrowser::socketDataArrived(int connId, void *yourPtr, cMessage *msg, bool urgent)
 {
-	EV_DEBUG << "Socket data arrived on connection " << connId << endl;
+	EV_DEBUG << "Socket data arrived on connection " << connId << ": " << msg->name() << endl;
 	if ( yourPtr==NULL )
 	{
 		EV_ERROR << "socketDataArrivedfailure. Null pointer" << endl;
@@ -176,9 +178,9 @@ void httptBrowser::socketDataArrived(int connId, void *yourPtr, cMessage *msg, b
 	if ( --sockdata->pending==0 )
 	{
 		EV_DEBUG << "Received last expected reply on this socket. Issing a close" << endl;
-		socket->close();	
+		socket->close();
 	}
-	delete msg;
+	// Message deleted in handler - do not delete here!
 }
 
 void httptBrowser::socketPeerClosed(int connId, void *yourPtr)
