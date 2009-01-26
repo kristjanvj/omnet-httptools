@@ -235,10 +235,11 @@ void httptBrowserBase::handleDataMessage( cMessage *msg )
 	int resultCode = appmsg->result();
 
 	string senderWWW = appmsg->originatorUrl();
+	EV_DEBUG << "Handling received message from " << senderWWW << ": " << msg->name() << ". Received @T=" << simTime() << endl;
 
 	if ( appmsg->result()!=200 || (CONTENT_TYPE_ENUM)appmsg->contentType()==rt_unknown )
 	{
-		EV_INFO << "Receiving message " << appmsg->name() << " with result code " << appmsg->result() << endl;
+		EV_INFO << "Result for " << appmsg->name() << " was other than OK. Code: " << appmsg->result() << endl;
 		htmlErrorsReceived++;
 		return;
 	}
@@ -248,6 +249,10 @@ void httptBrowserBase::handleDataMessage( cMessage *msg )
 		{
 			case rt_html_page:
 				EV_INFO << "HTML Document received: " << appmsg->name() << "'. Size is " << msg->byteLength() << " bytes and serial " << serial << endl;
+				if ( strlen(appmsg->payload()) != 0 ) 
+					EV_DEBUG << "Payload of " << appmsg->name() << " is: " << endl << appmsg->payload() << ", " << strlen(appmsg->payload()) << " bytes" << endl;
+				else
+					EV_DEBUG << appmsg->name() << " has no referenced resources. No GETs will be issued in parsing" << endl;
 				htmlReceived++;
 				break;
 			case rt_text: 
@@ -259,10 +264,9 @@ void httptBrowserBase::handleDataMessage( cMessage *msg )
 				imgResourcesReceived++;
 				break;
 		}
-		EV_DEBUG << "Receive time is " << simTime() << endl;
 
 		// Parse the html page body 
-		if ( (CONTENT_TYPE_ENUM)appmsg->contentType() == rt_html_page && strlen(appmsg->payload()) != 0)
+		if ( (CONTENT_TYPE_ENUM)appmsg->contentType() == rt_html_page && strlen(appmsg->payload()) != 0 )
 		{
 			EV_DEBUG << "Processing HTML document body:\n";
 			cStringTokenizer lineTokenizer( (const char*)appmsg->payload(), "\n" );
