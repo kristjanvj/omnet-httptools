@@ -1,0 +1,7 @@
+
+#
+# Browsing script file for the pair test scenario. Loads the cross page of www.single.org which contains references to resources on www.good.com
+
+#
+3600;www.single.org/cross
+
