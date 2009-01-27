@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#
+# Simple check script for the HttpTools project
+#
+# Assumes that the STD_OUT log file (generated with parselogs) exists and is known to be correct.
+# Parses the browser and server logs from the direct and socket test directories and compares to 
+# the standard file. 
+#
+
+rm STD_TMP
+rm DIRECT_OUT
+rm SOCKET_OUT
+rm DIRECT_TMP
+rm SOCKET_TMP
+
+# Replace the image numbers by x to ignore out-of-order delivery
+sed -e 's/\/images\/image[0-9A-Q]/\/images\/imagex/' STD_OUT > STD_TMP
+
+echo ""
+echo "Checking direct test output:"
+./parselogs pair-direct/browser.log pair-direct/server.log > DIRECT_OUT
+sed -e 's/\/images\/image[0-9A-Q]/\/images\/imagex/' DIRECT_OUT > DIRECT_TMP
+T=`diff STD_TMP DIRECT_TMP`
+if [ "$T" = "" ]; then echo "PASSED"; else echo "FAILED"; fi
+
+echo ""
+echo "Checking socket test output:"
+./parselogs pair-socket/browser.log pair-socket/server.log > SOCKET_OUT
+sed -e 's/\/images\/image[0-9A-Q]/\/images\/imagex/' SOCKET_OUT > SOCKET_TMP
+T=`diff STD_TMP SOCKET_TMP`
+if [ "$T" = "" ]; then echo "PASSED"; else echo "FAILED"; fi
