@@ -339,7 +339,7 @@ cMessage* httptBrowserBase::generatePageRequest(string www, string pageName, boo
 	httptRequestMessage *msg = new httptRequestMessage(szReq);
 	msg->setTargetUrl(www.c_str());
 	msg->setProtocol(httpProtocol);
-	msg->setRequestString(szReq); 
+	msg->setHeading(szReq); 
 	msg->setSerial(0);
 	msg->setByteLength(requestLength+size);   	// Add extra request size if specified
 	msg->setKeepAlive(httpProtocol==11);
@@ -383,7 +383,7 @@ cMessage* httptBrowserBase::generateResourceRequest(string www, string resource,
 	httptRequestMessage *msg = new httptRequestMessage(szReq);
 	msg->setTargetUrl(www.c_str());	
 	msg->setProtocol(httpProtocol);
-	msg->setRequestString(szReq); 
+	msg->setHeading(szReq); 
 	msg->setSerial(serial);
 	msg->setByteLength(requestLength);   	// Add extra request size if specified
 	msg->setKeepAlive(httpProtocol==11);
