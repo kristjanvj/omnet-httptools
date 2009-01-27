@@ -190,11 +190,11 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	httptReplyMessage* replymsg;
 
 	// Parse the request string on spaces
-	cStringTokenizer tokenizer = cStringTokenizer(request->requestString()," ");
+	cStringTokenizer tokenizer = cStringTokenizer(request->heading()," ");
 	std::vector<string> res = tokenizer.asVector();	
 	if ( res.size() != 3 )
 	{
-		EV_ERROR << "Invalid request string: " << request->requestString() << endl;
+		EV_ERROR << "Invalid request string: " << request->heading() << endl;
 		replymsg = generateErrorReply(request,400);
 		logResponse(replymsg);
 //		sendDirectToModule(senderModule,replymsg,0.0,rdReplyDelay);
@@ -216,7 +216,7 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	}
 	else
 	{
-		EV_ERROR << "Unsupported request type " << res[0] << " for " << request->requestString() << endl;
+		EV_ERROR << "Unsupported request type " << res[0] << " for " << request->heading() << endl;
 		replymsg = generateErrorReply(request,400);
 	}	
 
@@ -239,7 +239,7 @@ httptReplyMessage* httptServerBase::handleGetRequest( httptRequestMessage *reque
 	vector<string> req = parseResourceName(resource);
 	if ( req.size()!=3 )
 	{
-		EV_ERROR << "Invalid GET request string: " << request->requestString() << endl;
+		EV_ERROR << "Invalid GET request string: " << request->heading() << endl;
 		return generateErrorReply(request,400);
 	}
 
@@ -282,7 +282,7 @@ httptReplyMessage* httptServerBase::handleGetRequest( httptRequestMessage *reque
 	}
 	else
 	{
-		EV_ERROR << "Unknown or unsupported resource requested in " << request->requestString() << endl;
+		EV_ERROR << "Unknown or unsupported resource requested in " << request->heading() << endl;
 		return generateErrorReply(request,400);
 	}
 }
@@ -295,8 +295,9 @@ httptReplyMessage* httptServerBase::generateDocument( httptRequestMessage *reque
 	char szReply[512]; 
 	sprintf(szReply,"HTTP/1.1 200 OK (%s)",resource);
 	httptReplyMessage* replymsg = new httptReplyMessage(szReply);
+	replymsg->setHeading("HTTP/1.1 200 OK");
 	replymsg->setOriginatorUrl(wwwName.c_str());
-	replymsg->setTargetUrl(request->targetUrl());
+	replymsg->setTargetUrl(request->originatorUrl());
 	replymsg->setProtocol(request->protocol());           
 	replymsg->setSerial(request->serial());
 	replymsg->setResult(200);
@@ -329,7 +330,7 @@ httptReplyMessage* httptServerBase::generateDocument( httptRequestMessage *reque
 
 httptReplyMessage* httptServerBase::generateResourceMessage( httptRequestMessage *request, string resource, CONTENT_TYPE_ENUM category )
 {
-	EV_DEBUG << "Generating resource message in response to request " << request->requestString() << " with serial " << request->serial() << endl;
+	EV_DEBUG << "Generating resource message in response to request " << request->heading() << " with serial " << request->serial() << endl;
 
 	if ( category==rt_text )
 		textResourcesServed++;
@@ -339,8 +340,9 @@ httptReplyMessage* httptServerBase::generateResourceMessage( httptRequestMessage
 	char szReply[512]; 
 	sprintf(szReply,"HTTP/1.1 200 OK (%s)",resource.c_str());
 	httptReplyMessage* replymsg = new httptReplyMessage(szReply);
+	replymsg->setHeading("HTTP/1.1 200 OK");
 	replymsg->setOriginatorUrl(wwwName.c_str());
-	replymsg->setTargetUrl(request->targetUrl());
+	replymsg->setTargetUrl(request->originatorUrl());
 	replymsg->setProtocol(request->protocol());           
 	replymsg->setSerial(request->serial());
 	replymsg->setResult(200);
@@ -357,11 +359,12 @@ httptReplyMessage* httptServerBase::generateErrorReply( httptRequestMessage *req
 	char szErrStr[32];
 	sprintf(szErrStr,"HTTP/1.1 %.3d %s", code, htmlErrFromCode(code).c_str());
 	httptReplyMessage* replymsg = new httptReplyMessage(szErrStr);
+	replymsg->setHeading(szErrStr);
 	replymsg->setOriginatorUrl(wwwName.c_str());
-	replymsg->setTargetUrl(request->targetUrl());
+	replymsg->setTargetUrl(request->originatorUrl());
 	replymsg->setProtocol(request->protocol());           
 	replymsg->setSerial(request->serial());
-	replymsg->setResult(400);
+	replymsg->setResult(code);
 	replymsg->setByteLength((int)rdErrorMsgSize->get());
 	replymsg->setKind(HTTPT_RESPONSE_MESSAGE);
 
