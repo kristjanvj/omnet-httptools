@@ -53,9 +53,10 @@ message httptBaseMessage
 		string targetUrl; 				// The target URL - request set for browsers, echoed by servers.
 		string originatorUrl="";		// The originator URL. Only applicable for servers.
 		int protocol = 11; 				// 10 for http/1.0, 11 for http/1.1.
-		bool keepAlive = true;
-		int serial = 0;
-		string payload="";
+		bool keepAlive = true;			// The keep-alive header
+		int serial = 0;					// Convenience field which allows resource requests to be serially tagged for ease of analysis.
+		string heading="";				// The message heading - request string for requests, response for replies
+		string payload="";				// The payload field
 };
 
 //
@@ -69,7 +70,7 @@ message httptRequestMessage extends httptBaseMessage
 	properties:
 		omitGetVerb = true;			// Dont append get to generated getter methods.
 	fields:
-		string requestString="";	// The request string. Emulates HTTP request format
+//		string requestString="";	// The request string. Emulates HTTP request format
 		bool badRequest = false;	// Set to true to simulate a bad request. Server answers w. 404.
 };
 
