@@ -33,6 +33,13 @@
 #include <vector>
 #include <string>
 
+#if WIN32
+# include <io.h>
+# include <stdio.h>
+#else
+# include <unistd.h>
+#endif
+
 enum CONTENT_TYPE_ENUM {rt_unknown,rt_html_page,rt_image,rt_text};
 
 using namespace std;
@@ -53,5 +60,6 @@ double safeatof(const char* strval, double defaultVal=0.0);
 int safeatoi(const char* strval, int defaultVal=0);
 int safeatobool(const char* strval, bool defaultVal=false);
 std::vector<std::string> splitFile(string fileName);
+bool fileExists( const char *file );
 
 #endif /* __httpUtils_H_ */
