@@ -99,8 +99,12 @@ void httptNodeBase::logEntry( string line )
 	time_t curtime;
 	time(&curtime);
 
+	bool exists = fileExists(logFileName.c_str()); // Check if the file exists. If not, add the field names at top.
+
 	outfile.open(logFileName.c_str(),ios::app); 
-	outfile << curtime << ";" << simTime() << ";" << fullPath();
+	if ( !exists )
+		outfile << "time;simtime;logging-node;sending-node;type;originator-url;target-url;protocol;keep-alive;serial;heading;bad-req;result-code;content-type" << endl;
+	outfile << curtime << ";" << simTime() << ";" << parentModule()->name();
 	if( outputFormat == lf_short )
 		outfile << ";";
 	else
@@ -113,10 +117,15 @@ string httptNodeBase::formatHttpRequestShort( const httptRequestMessage* httpReq
 {	
 	ostringstream str;
 
-	str << "REQ;" << httpRequest->targetUrl() << ";"  << httpRequest->originatorUrl() << ";";
-	str << httpRequest->protocol() << httpRequest->keepAlive() << ";" << httpRequest->serial() << ";";
-//	str << httpRequest->messageType() << ";" << httpRequest->requestSubType() 
-	str << httpRequest->requestString() << ";" << httpRequest->badRequest();
+	string originatorStr = "";
+	cModule *originator = httpRequest->senderModule();
+	if ( originator!=NULL && originator->parentModule()!=NULL )
+		originatorStr = originator->parentModule()->name();
+
+	str << originatorStr << ";";
+	str << "REQ;" << httpRequest->originatorUrl() << ";" << httpRequest->targetUrl() << ";";
+	str << httpRequest->protocol() << ";" << httpRequest->keepAlive() << ";" << httpRequest->serial() << ";";
+	str << httpRequest->heading() << ";" << httpRequest->badRequest() << ";;"; // Skip the response specific fields
 	
 	return str.str();
 }
@@ -125,9 +134,16 @@ string httptNodeBase::formatHttpResponseShort( const httptReplyMessage* httpResp
 {
 	ostringstream str;
 
-	str << "RESP;" << httpResponse->targetUrl() << ";"  << httpResponse->originatorUrl() << ";";
-	str << httpResponse->protocol() << httpResponse->keepAlive() << ";" << httpResponse->serial() << ";";
-	str << httpResponse->result() << ";" << ";" << httpResponse->contentType();
+	string originatorStr = "";
+	cModule *originator = httpResponse->senderModule();
+	if ( originator!=NULL && originator->parentModule()!=NULL )
+		originatorStr = originator->parentModule()->name();
+
+	str << originatorStr << ";";
+	str << "RESP;" << httpResponse->originatorUrl() << ";" << httpResponse->targetUrl() << ";";
+	str << httpResponse->protocol() << ";" << httpResponse->keepAlive() << ";" << httpResponse->serial() << ";";
+	str << httpResponse->heading() << ";;"; // Skip the request specific fields
+	str << httpResponse->result() << ";" << httpResponse->contentType();
 
 	return str.str();
 }
@@ -152,7 +168,7 @@ string httptNodeBase::formatHttpRequestLong( const httptRequestMessage* httpRequ
 	str << "BAD-REQ:" << httpRequest->badRequest() << "  ";
 	str << "SERIAL:" << httpRequest->serial() << "  " << endl;
 
-	str << "REQUEST:" << httpRequest->requestString() << endl;
+	str << "REQUEST:" << httpRequest->heading() << endl;
 /*	str << "REQUEST-TYPE:";
 	switch( httpRequest->messageType() )
 	{
@@ -195,6 +211,8 @@ string httptNodeBase::formatHttpResponseLong( const httptReplyMessage* httpRespo
 	str << "RESULT:" << httpResponse->result() << "  ";
 	str << "KEEP-ALIVE:" << httpResponse->keepAlive() << "  ";
 	str << "SERIAL:" << httpResponse->serial() << "  " << endl;
+
+	str << "RESPONSE: " << httpResponse->heading() << endl;
 
 	str << "CONTENT-TYPE:";
 	switch( httpResponse->contentType() )
