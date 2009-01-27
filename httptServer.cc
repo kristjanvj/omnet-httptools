@@ -124,7 +124,11 @@ void httptServer::socketDataArrived(int connId, void *yourPtr, cMessage *msg, bo
 	{ */
 		cMessage *reply = handleReceivedMessage(msg);
 		if ( reply!=NULL )
+		{
 			socket->send(reply);
+			msgsSent++;
+			bytesSent+=msg->byteLength();
+		}
 		delete msg;
 		// TODO: Check if server should close connection here
 /*	}
