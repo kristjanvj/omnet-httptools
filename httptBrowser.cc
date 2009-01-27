@@ -159,6 +159,8 @@ void httptBrowser::socketEstablished(int connId, void *yourPtr)
 		EV_DEBUG << "Submitting request " << msg->name() << " to socket " << connId << endl;
 		socket->send(msg);
 		sockdata->pending++;
+		msgsSent++;
+		bytesSent+=msg->byteLength();
 	}
 }
 
