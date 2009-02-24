@@ -36,5 +36,5 @@ We thus support a scripted mode for our browser object, in which traces are repl
 The script file is specified by setting a _scriptFile_ initialization parameter. The file format is:
 {{{
 {simulation time};{resource URL}
-}}
+}}}
 The _simulation time_ parameter indicates the time at which the request for a specific resource, indicated by the _resource URL_, is made. 
