@@ -1,7 +1,6 @@
+= HTTP Messages =
 
-= HTTPMessage =
-
-*HttpRequest* and *HttpReply* messages are used by the browser and server components to simulate HTTP requests and replies. Their fields are shown in the table below:
+*!httptRequestMessage* and *!httptReplyMessage* messages are used by the browser and server components to simulate HTTP requests and replies. Their fields are shown in the table below:
 
 || *message type* || *field* || *Description* ||
 || Common || targetUrl || URL of the intended recipient ||
@@ -14,6 +13,8 @@
 || Request || bad || Indicates that the browser is issuing an invalid request. The server responds with a 404:Not found. ||
 || Response || resultCode || The numerical result code, e.g. 200 for OK or 404 for not found ||
 || Response || payloadType || The type of the returned object, page, image or text resource, as an integer ||
+
+The two messages, !HttpRequest and !HttpReply, are subclassed from a common base message type !httptBaseMessage
 
 Servers generate replies containing simplified HTML bodies as payload, either according to the random parameters or site definition scripts, as discussed in [HTTPServer]. The  body is a list of the form:
 {{{
