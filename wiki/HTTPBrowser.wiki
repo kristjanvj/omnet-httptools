@@ -1,2 +1,40 @@
-
 = HTTPBrowser =
+
+The purpose of the *HTTPBrowser* component is to simulate a browser operating on a single host. It operates in conjunction with the server component to provide a realistic simulation of Web usage patterns.
+
+The activity of the browser is primarily characterized by the expected user behavior, as we are modeling an interactive application. Observed browsing patterns are characterized by periods of relatively frequent activity, divided by extended pauses. Users browse their favorite news sites, read e-mail and research a paper, generating bursts of requests, while periodically returning to their daily chores of writing research papers. Activity periods, inter-request delays and request size distributions are thus primarily used in our solution to model the browsers behavior.
+
+Browsers send GET requests to server objects, emulating real browsing behavior. The queried server returns simulated HTML documents, which can contain references to resources, e.g. images, CSS documents and scripts. The browser opens a connection, or number of connections, and retrieves each referenced resource. See [HTTPMessages HTTP messages] for further details on the message object. The browser does not have any knowledge of the size of the requested object before it is returned, as it is solely determined by the server component.
+
+The browser component supports two modes of operation:
+
+  * *Random request mode*, in which the browser uses statistical distributions of usage patterns to generate requests to random Web servers. 
+  * *Scripted mode*, in which the browsing behavior is determined by a list of predefined Web sites to visit at specific times. 
+
+== Random request mode ==
+
+The goal for this mode of operation is for the browser component to exhibit usage patterns, which are statistically similar to ones observed in real systems. Parameters are determined by statistical distributions, which can be derived from measurements. The parameters supported for the browsing simulation are shown in the table below. All are defined in a XML configuration file, and assigned to the browser component at run-time using a XML initialization parameter and optional XPath-like section specifier. _Uniform_, _normal_, _exponential_, and _Zipf_ random distributions are currently supported, in addition to a _histogram_ object for empirical distributions.
+
+|| *Parameter* || *Description* ||
+|| sessionInterval || The interval between activity periods ||
+|| requestInterval || The interval between requests within activity periods ||
+|| reqInSession || The number of requests per activity period ||
+|| processingDelay || The delay in processing of each received HTML document before issuing requests for referenced resources ||
+|| requestSize || The size of request, disregarding the TCP/IP headers ||
+
+The browser selects a server to query in this mode by utilizing the [HTTPController global controller object] to return a random server reference.
+
+Every browser in a simulation can be configured with different parameters, although this would quickly become unwieldy when setting up a large simulation. The flexibility to define groups of users, e.g. for light, normal and heavy browsing, is however useful in many cases. 
+
+
+== Scripted mode ==
+
+Predefined and repeatable actions by a subset of users in a simulation can be useful in a variety of situations. One example is an experiment in which we let the majority of browsers peruse HTML pages according to the nominal usage pattern, while a small subset behaves in a known manner, e.g. issuing anomalous requests consistent with a XSS attack. The general population here provides "background noise", behind which the attack may be hard to detect. Methods for detection of such events are of particular interest in our current research, which provided the inspiration for the creation of !HttpTools.
+
+We thus support a scripted mode for our browser object, in which traces are replayed to inject browse events at specific times. We can of course mix browser nodes employing the random and scripted modes in a scenario. %One application would be to inject traces collected on a real browser into a scenario, with a number of simulated browsers providing background traffic.
+
+The script file is specified by setting a _scriptFile_ initialization parameter. The file format is:
+{{{
+{simulation time};{resource URL}
+}}
+The _simulation time_ parameter indicates the time at which the request for a specific resource, indicated by the _resource URL_, is made. 
