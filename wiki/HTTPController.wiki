@@ -1,0 +1,10 @@
+
+= HTTPController =
+
+The purpose of the _HTTPController_ object is to support the server and browser components. A single controller instance must exist in all scenarios in which the browser and server components are used. Server components register their URL, OMNeT++ module name and listening port with the controller upon initialization.
+
+The controller serves as a lookup service for OMNeT++ module names from the URLs used to identify the Web server instances. It also provides a random Web site lookup facility, used by the browser component in its random browsing mode. _Uniform_ and _Zipf_ distributions are currently supported for random server selection. The controller parameters are defined in a XML file, as previously discussed for the server and browser components.
+
+The controller supports _popularity modification events_ for individual sites. Such events are defined in a script file, assigned to the controller by a initialization parameter, which can be used for modeling a variety of situations involving dynamically changing server popularity. 
+
+A popularity modification event at a time T,,init,, causes a site to be added to a custom selection list. A random site request from a browser will then yield a hit from the custom list with p,,c,,=sum(p,,i,,), where p,,i,, is the enhanced selection probability of site _i_ on the list. A particular site _i_ is selected from the list with p=p,,i,,/p,,c,,. Conversely, a site is selected from the general population, using its assigned random distribution, with $p,,p,,=1-p,,c,,. The special probability of a site can be _amortized_ by a constant _alpha_ for each hit, eventually reducing it to zero, at which time it is removed from the special list.
