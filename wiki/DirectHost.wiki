@@ -1,4 +1,3 @@
-
 = DirectHost =
 
 This component is a very minimal container for [HTTPBrowser] and [HTTPServer] components. This excerpt from the NED file explains in the simplest possible terms:
@@ -14,3 +13,5 @@ module DirectHost
     connections nocheck:
 endmodule
 }}}
+
+Use this module if direct message passing is desired. Simply plug in the server or browser module as a _tcpApp_ in the initialization file.
