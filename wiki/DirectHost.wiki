@@ -1,0 +1,16 @@
+
+= DirectHost =
+
+This component is a very minimal container for [HTTPBrowser] and [HTTPServer] components. This excerpt from the NED file explains in the simplest possible terms:
+
+{{{
+module DirectHost
+    parameters:
+        numTcpApps: numeric const,		// The number of tcpApps in the array
+        tcpAppType: string;			// The type of contained tcpApps
+    submodules:
+        tcpApp: tcpAppType[numTcpApps] like TCPApp;
+            display: "p=163,67;i=block/app";
+    connections nocheck:
+endmodule
+}}}
