@@ -11,7 +11,7 @@ make
 }}}
 and try a few examples from Examples to see if everythin works according to plan.
 
-*Get the HttpTools source.* From within your INET directory, get the source from the svn repository by entering 
+*Get the !HttpTools source.* From within your INET directory, get the source from the subversion repository by entering 
 {{{
 svn checkout http://omnet-httptools.googlecode.com/svn/trunk/ httptools
 }}}
