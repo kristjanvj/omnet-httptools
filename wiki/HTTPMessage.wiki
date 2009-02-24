@@ -1,0 +1,26 @@
+
+= HTTPMessage =
+
+*HttpRequest* and *HttpReply* messages are used by the browser and server components to simulate HTTP requests and replies. Their fields are shown in the table below:
+
+|| *message type* || *field* || *Description* ||
+|| Common || targetUrl || URL of the intended recipient ||
+|| Common || originatorUrl || URL of the originator. Only applicable if the originator is a server ||
+|| Common || protocol || The HTTP protocol version, http/1.0 or http/1.1 ||
+|| Common || keepAlive || True if the keep-alive header is simulated as set ||
+|| Common || serial || Convenience field, which allows resources requested and sent to be serially tagged ||
+|| Common || payload || The message body as a string ||
+|| Request || requestString || The request line. Emulates the HTTP request, e.g. GET {resource} {protocol} ||
+|| Request || bad || Indicates that the browser is issuing an invalid request. The server responds with a 404:Not found. ||
+|| Response || resultCode || The numerical result code, e.g. 200 for OK or 404 for not found ||
+|| Response || payloadType || The type of the returned object, page, image or text resource, as an integer ||
+
+Servers generate replies containing simplified HTML bodies as payload, either according to the random parameters or site definition scripts, as discussed in [HTTPServer]. The  body is a list of the form:
+{{{
+{resource}[;{site};{delay};{bad}]
+}}}
+
+  * *resource* is the only required field and contains a reference to a resource object, by default simulated as stored locally.
+  * *site* is by default omitted, signifying that the resource is local. This field is only used when referring to resources hosted by third party sites.
+  * *delay* is a optional parameter which causes the receiving browser to insert a delay before requesting the resource.
+  * *bad* is a optional parameter used as a convenience when modeling anomalous messages. The receiving browser will generate a request to the target site, marked as bad (see the table above). The target site will then automatically answer with a *404:Not found*. This feature can be used to simulate usage errors or malicious behavior, e.g. DDoS attacks.
