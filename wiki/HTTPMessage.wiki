@@ -14,7 +14,7 @@
 || Response || resultCode || The numerical result code, e.g. 200 for OK or 404 for not found ||
 || Response || payloadType || The type of the returned object, page, image or text resource, as an integer ||
 
-The two messages, !HttpRequest and !HttpReply, are subclassed from a common base message type !httptBaseMessage
+The two messages, request and reply, are subclassed from a common base message type, httptBaseMessage.
 
 Servers generate replies containing simplified HTML bodies as payload, either according to the random parameters or site definition scripts, as discussed in [HTTPServer]. The  body is a list of the form:
 {{{
