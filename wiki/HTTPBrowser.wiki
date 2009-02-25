@@ -16,6 +16,7 @@ The browser component supports two modes of operation:
 The goal for this mode of operation is for the browser component to exhibit usage patterns, which are statistically similar to ones observed in real systems. Parameters are determined by statistical distributions, which can be derived from measurements. The parameters supported for the browsing simulation are shown in the table below. All are defined in a XML configuration file, and assigned to the browser component at run-time using a XML initialization parameter and optional XPath-like section specifier. _Uniform_, _normal_, _exponential_, and _Zipf_ random distributions are currently supported, in addition to a _histogram_ object for empirical distributions.
 
 || *Parameter* || *Description* ||
+|| activityPeriod || The activity period of the browser during a 24h day ||
 || sessionInterval || The interval between activity periods ||
 || requestInterval || The interval between requests within activity periods ||
 || reqInSession || The number of requests per activity period ||
