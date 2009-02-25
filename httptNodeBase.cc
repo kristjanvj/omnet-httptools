@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -236,7 +237,7 @@ string httptNodeBase::formatHttpResponseLong( const httptReplyMessage* httpRespo
 double httptNodeBase::transmissionDelay( cMessage *msg )
 {
 	if ( linkSpeed==0 ) return 0.0; // No delay if linkspeed unspecified
-	return msg->byteLength()/((double)linkSpeed/8);
+	return msg->byteLength()/((double)linkSpeed/8);  // The linkspeed is in bits/s
 }
 
 

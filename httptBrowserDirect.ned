@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -31,20 +32,29 @@
 //
 // httptBrowserDirect
 //
+// This component is the direct message passing version of the browser simulation 
+// component. It is derived from httptBrowserBase. Use this component with the
+// DirectHost container module.
+//
+// Direct message passing is used for transmission, thus bypassing the normal links and
+// interfaces. A linkSpeed parameter is hence needed to model transmission delays.
+//
+// @see DirectHost
+// @see httptBrowserBase
+// @see httptBrowser
+//
 // @version 0.9 
 // @author  Kristjan V. Jonsson
 //
 simple httptBrowserDirect
 	parameters:
-		address: string,
-		port: numeric const,
-		config: xml,
-		logLevel: numeric,
-		httpProtocol: numeric,
-		linkSpeed: numeric,
-		logFile: string,		
-		scriptFile: string,
-		activationTime: numeric;
+		config: xml,				// The XML configuration file for the browser
+		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+		logFile: string,			// Name of a browser log file. Browse events are appended, allowing sharing of file for multiple browsers.
+		scriptFile: string,			// The browsing script file. Blank to disable.
+		activationTime: numeric,	// The initial activation delay. Zero to disable.
+		linkSpeed: numeric;			// Used to model transmission delays
 	gates:
 		in: tcpIn;
 		out: tcpOut;

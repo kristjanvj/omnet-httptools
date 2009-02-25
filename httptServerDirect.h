@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -33,23 +34,32 @@
 #include "httptServerBase.h"
 
 /**
- * @brief httptServerDirect module 
+ * @brief Server module for direct message passing.
  *
- * This module implements a flexible Web server. It is part of the HttpTools project
+ * This module implements a flexible Web server for direct message passing. It is part of the HttpTools project
  * and should be used in conjunction with a number of clients running the httptBrowserDirect.
+ * The module plugs into the DirectHost module.
  *
- * @see httptBrowserDirect
+ * @see httptServerBase
+ * @see httptServer
  *
- * @version 1.0 
+ * @version 0.9
  * @author  Kristjan V. Jonsson
  */
 class INET_API httptServerDirect : public httptServerBase
 {
-	protected: 
+	/** @name cSimpleModule redefinitions */
+	//@{
+	protected:
+		/** Initialization of the component and startup of browse event scheduling */
 		virtual void initialize();
-		virtual void finish();
-		virtual void handleMessage(cMessage *msg);
 
+		/** Report final statistics */
+		virtual void finish();
+
+		/** Handle incoming messages. See the parent class for details. */
+		virtual void handleMessage(cMessage *msg);
+	//@}
 };
 
 #endif

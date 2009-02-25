@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -34,27 +35,29 @@
 #include <cstrtokenizer.h>
 #include "httptNodeBase.h"
 
-#define ENABLE_ACTIVITY_PERIOD true // Use to enable sleep/activity periods
-
 #define MSGKIND_START_SESSION 	0
 #define MSGKIND_NEXT_MESSAGE  	1
 #define MSGKIND_SCRIPT_EVENT  	2
 #define MSGKIND_ACTIVITY_START  3
 
+#define MAX_URL_LENGTH 2048 // The maximum allowed URL string length.
+
 using namespace std;
 
-enum SESSION_STATE {ss_idle, ss_active};
-
-/** Browse event item. Used in scripted mode.*/
+/** 
+ * @brief Browse event item. Used in scripted mode.
+ */
 struct BROWSE_EVENT_ENTRY
 {
-	simtime_t time;
-	string wwwhost;
-	string resourceName;
-	httptNodeBase *serverModule;
+	simtime_t time;					//> Event triggering time
+	string wwwhost;					//> Host to contact
+	string resourceName;			//> The resource to request
+	httptNodeBase *serverModule;	//> Reference to the omnet server object. Resolved at parse time.
 };
 
-/** Browse events queue. Used in scripted mode. */
+/** 
+ * @brief Browse events queue. Used in scripted mode. 
+ */
 typedef deque<BROWSE_EVENT_ENTRY> BROWSE_EVENT_QUEUE_TYPE;
 
 /**
@@ -96,21 +99,26 @@ class INET_API httptBrowserBase : public httptNodeBase
 		bool scriptedMode; 						//> Set to true if a script file is defined, False otherwise
 		BROWSE_EVENT_QUEUE_TYPE browseEvents; 	//> Queue of browse events used in scripted mode
 
-		// The current session parameters
+		/** @name The current session parameters */
+		//@{
 		int reqInCurSession; 			//> The number of requests made sofar in the current session
 		int reqNoInCurSession; 			//> The total number of requests to be made in the current session
 		double activityPeriodLength; 	//> The length of the currently active activity period
 		simtime_t acitivityPeriodEnd; 	//> The end in simulation time of the current activity period
+		//@}
 
-		// The random objects
+		/** @name The random objects */
+		//@{
 		rdObject *rdProcessingDelay;
 		rdObject *rdActivityLength;
 		rdObject *rdInterRequestInterval;
 		rdObject *rdInterSessionInterval;
 		rdObject *rdRequestSize;
 		rdObject *rdReqInSession;
+		//@}
 		
-		// statistics
+		/** @name statistics variables */
+		//@{
 		long htmlRequested;
 		long htmlReceived;
 		long htmlErrorsReceived;
@@ -121,6 +129,7 @@ class INET_API httptBrowserBase : public httptNodeBase
 		long messagesInCurrentSession;
 		long sessionCount;
 		long connectionsCount;
+		//@}
 
 	public:
 		httptBrowserBase();
@@ -140,19 +149,36 @@ class INET_API httptBrowserBase : public httptNodeBase
 	//@}
 
 	protected:
+		/** Handle a HTTP data message */
 		void handleDataMessage( cMessage *msg );
+
+		/** Handle a self message -- events and such */
 		void handleSelfMessages( cMessage *msg );
+
+		/** Schedule the next browse event. Handles the activity, session and inter-request times */
 		void scheduleNextBrowseEvent();
 
+		/** @name pure virtual methods to communicate with the server. Must be implemented in derived classes */
+		//@{
+		/** Send a request defined by a browse event (scripted entry) to a server */
 		virtual void sendRequestToServer( BROWSE_EVENT_ENTRY be )=0;
+		/** Send a request to a randomly selected server. The derived class utilizes the controller object to retrieve the object */
 		virtual void sendRequestToRandomServer()=0;
+		/** Send a request to a named server */
 		virtual void sendRequestsToServer( string www, MESSAGE_QUEUE_TYPE queue )=0;
+		//@}
 
-		/** Generate a HTTP request using the specified resources. Should be used with @reference enqueueHttpRequest. */
+		/** @name Methods for generating HTML page requests and resource requests */
+		//@{
+		/** Generate a HTTP request to a specific server and for a specific page */
 		cMessage* generatePageRequest(string www, string page, bool bad=false, int size=0);
+		/** Generate a random HTTP request -- used in case we dont care which page is requested */
 		cMessage* generateRandomPageRequest(string www, bool bad=false, int size=0);
+		/** Generate a resource request, e.g. for an image or css document */
 		cMessage* generateResourceRequest(string www, string resource="", int serial=0, bool bad=false, int size=0);		
+		//@}
 
+		//* Read scripted events from file. Triggered if the script file parameter is specified in the initialization file. */
 		void readScriptedEvents( const char* filename );
 };
 

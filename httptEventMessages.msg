@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -42,7 +43,9 @@
 // ----------------------------------------------------------------------------
 
 //
-// Event message definitions for the HttpTools toolkit.
+// Server status update event
+//
+// Used by the controller to trigger popularity modifications for web sites.
 //
 // @version 0.9 
 // @author  Kristjan V. Jonsson
@@ -52,11 +55,11 @@ message httptServerStatusUpdateMsg
 	properties:
 		omitGetVerb = true;
 	fields:
-		string www;
-		simtime_t setTime;
-		int eventKind;
-		double pvalue;
-		double pamortize;
+		string www;				// Name of the WWW site.
+		simtime_t setTime;		// The event set time.
+		int eventKind;			// The event kind, e.g. ss_special.
+		double pvalue;			// The initial elevated probability.
+		double pamortize;		// The amortization factor -- i.e. how much the pvalue is decreased on each hit.
 }
 
 

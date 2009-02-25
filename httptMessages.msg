@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -32,7 +33,7 @@
 //
 // @file httptMessages.msg
 //
-// Protocol message definitions for the HttpTools components.
+// HTTP message definitions for the HttpTools components.
 //
 // @version 0.9 
 // @author  Kristjan V. Jonsson
@@ -70,7 +71,6 @@ message httptRequestMessage extends httptBaseMessage
 	properties:
 		omitGetVerb = true;			// Dont append get to generated getter methods.
 	fields:
-//		string requestString="";	// The request string. Emulates HTTP request format
 		bool badRequest = false;	// Set to true to simulate a bad request. Server answers w. 404.
 };
 
@@ -85,8 +85,8 @@ message httptReplyMessage extends httptBaseMessage
 	properties:
 		omitGetVerb = true;
 	fields:
-		int result=0; 				// e.g. 200 for OK
-		int contentType=0;
+		int result=0; 				// e.g. 200 for OK, 404 for NOT FOUND.
+		int contentType=0;			// The content type: HTML pages, text or image resources.
 };
 
 

@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -36,8 +37,9 @@ void httptBrowserDirect::initialize()
 	EV_DEBUG << "Initializing HTTP direct browser component\n";
 	httptBrowserBase::initialize();
 
+	// linkSpeed is used to model transmission delay. By default, 1 Mbit/s.
 	linkSpeed = par("linkSpeed");
-	if ( linkSpeed == 0 ) linkSpeed = 10*1024*1024;
+	if ( linkSpeed == 0 ) linkSpeed = 1024*1024; 
 }
 
 void httptBrowserDirect::finish()

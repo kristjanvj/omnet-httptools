@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -30,15 +31,22 @@
 
 #include "httptServerDirectEvilB.h"
 
-// TODO: ENABLE LOGGING TO FILE - PARAMETER IN INI FILE
-// TODO: ENABLE SITE SCRIPS - PREDEFINED PAGES
-
-
 Define_Module(httptServerDirectEvilB); 
 
-std::string httptServerDirectEvilB::generateDocument( const char* urlstring )
+void httptServerDirectEvilB::initialize()
 {
-	int numResources = 100+(int)uniform(0,100);
+	httptServerDirect::initialize();
+
+	badLow  = par("minBadRequests");
+	badHigh = par("maxBadRequests");
+
+	EV_INFO << "Badguy " << wwwName << " was initialized to launch an attack on www.good.com" << endl;
+	EV_INFO << "Minimum " << badLow << " and maximum " << badHigh << " bad requests for each hit." << endl;
+}
+
+std::string httptServerDirectEvilB::generateBody()
+{
+	int numResources = badLow+(int)uniform(0,badHigh-badLow);
 	double rndDelay;
 	string result;
 
@@ -48,7 +56,7 @@ std::string httptServerDirectEvilB::generateDocument( const char* urlstring )
 	{		
 		rndDelay = 2.0+uniform(0,10);
 		refSize = uniform(500,1000); // The random size represents a random reference string length
-		sprintf(tempBuf, "%s%.4d;%s;%f;%s;%d\n", "TEXT", i, "www.good.com", rndDelay, "TRUE", refSize);
+		sprintf(tempBuf, "TEXT%.4d.txt;%s;%f;%s;%d\n", i, "www.good.com", rndDelay, "TRUE", refSize);
 		result.append(tempBuf);
 	}
 

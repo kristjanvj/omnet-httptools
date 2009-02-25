@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -144,18 +145,85 @@ double rdExponential::get()
 	return val;
 }
 
+rdHistogram::rdHistogram(rdHistogramBins bins)
+{
+	m_bins = rdHistogramBins(bins);
+	__normalizeBins();
+}
+
 rdHistogram::rdHistogram( cXMLAttributeMap attributes )
 {
 	m_type=dt_histogram;
-	if ( !_hasKey(attributes,"defFile") )
-		throw "No definition file specified for a histogram distribution";
-	//m_file = attributes["defFile"];
-	// TODO: OPEN FILE AND READ HISTOGRAM DATA
+	if ( !_hasKey(attributes,"bins") )
+		throw "No bins specified for a histogram distribution";
+	string binstr = attributes["bins"];
+	__parseBinString(binstr);
+	__normalizeBins();
 }
 
 double rdHistogram::get()
 {
-	return 0.0; // TODO: IMPLEMENT
+	int i;
+	int count = m_bins.size(); 
+	rdHistogramBin bin;	
+	double val = uniform(0,1);
+	double cumsum = 0;	
+	int cumcount = 0;
+	for( i=0; i<count; i++ )
+	{
+		// First select the bin
+		bin = m_bins[i];
+		cumsum += bin.sum;
+		cumcount += bin.count;
+		if ( cumsum>val )
+		{
+			// Then choose from the elements in the bin
+			double n = uniform(0,bin.count);
+			return (double)cumcount+n; // Return the position of the item in the histogram data.
+		}
+	}
+	return -1.0; // Default return in case something weird happens
+}
+
+void rdHistogram::__parseBinString( string binstr )
+{
+	// The bins string is of the form [(count1,sum1);(count2,sum2);...;(countn,sumn)]
+	binstr = trimLeft(binstr,"[");
+	binstr = trimRight(binstr,"]");
+	cStringTokenizer tokenizer = cStringTokenizer(binstr.c_str(),";");
+	std::vector<string> res = tokenizer.asVector();
+	std::vector<string>::iterator i;
+	string curtuple, countstr, sumstr;
+	int count;
+	double sum;
+	int pos;
+	rdHistogramBin bin;
+	for( i=res.begin(); i!=res.end(); i++ )
+	{
+		curtuple = (*i);
+		curtuple = trimLeft(curtuple,"(");
+		curtuple = trimRight(curtuple,")");
+		pos = curtuple.find(',');
+		if ( pos==-1 ) continue;  // Invalid tuple -- raise error here?
+		countstr = curtuple.substr(0,pos);
+		sumstr = curtuple.substr(pos+1,curtuple.size()-pos-1);
+		sum = safeatof(sumstr.c_str(),0.0);
+		count = safeatoi(countstr.c_str(),0);
+		if ( count == 0 ) continue; // Nothing in this bin so lets skip it.
+		bin.count = count;
+		bin.sum = sum;
+		m_bins.push_back(bin);
+	}
+}
+
+void rdHistogram::__normalizeBins()
+{
+	int i;
+	double sum=0;
+	for( i=0; i<m_bins.size(); i++ )
+		sum += m_bins[i].sum;
+	for( i=0; i<m_bins.size(); i++ )
+		m_bins[i].sum = m_bins[i].sum/sum;
 }
 
 rdConstant::rdConstant(double value)

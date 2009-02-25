@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -56,10 +57,16 @@ void httptBrowserBase::initialize()
 	rdObjectFactory rdFactory;
 	// Activity period length -- the waking period
 	element = rootelement->getFirstChildWithTag("activityPeriod");
-	if ( element==NULL ) error("Activity period parameter undefined in XML configuration");
-	attributes = element->getAttributes();
-	rdActivityLength = rdFactory.create(attributes);
-	if ( rdActivityLength==NULL) error("Activity period random object could not be created");
+	if ( element==NULL ) 
+	{
+		rdActivityLength=NULL; // Disabled if this parameter is not defined in the file
+	}
+	else
+	{
+		attributes = element->getAttributes();
+		rdActivityLength = rdFactory.create(attributes);
+		if ( rdActivityLength==NULL) error("Activity period random object could not be created");
+	}
 	// Inter-session interval
 	element = rootelement->getFirstChildWithTag("interSessionInterval");
 	if ( element==NULL ) error("Inter-request interval parameter undefined in XML configuration");
@@ -85,7 +92,7 @@ void httptBrowserBase::initialize()
 	rdReqInSession = rdFactory.create(attributes); 
 	if ( rdReqInSession==NULL) error("Requests in session random object could not be created");
 	// Processing delay
-	element = rootelement->getFirstChildWithTag("processingDelay"); // TODO: CHECK USE OF DELAY IN SOCKET APPLICATIONS
+	element = rootelement->getFirstChildWithTag("processingDelay");
 	if ( element==NULL ) error("processing delay parameter undefined in XML configuration");
 	attributes = element->getAttributes();
 	rdProcessingDelay = rdFactory.create(attributes);
@@ -130,9 +137,9 @@ void httptBrowserBase::initialize()
 	}
 	else
 	{
-		double activationTime = par("activationTime"); // This is the activation delay. Optional // TODO: Is this necessary??
-		if ( ENABLE_ACTIVITY_PERIOD )
-			activationTime += (86400.0 - rdActivityLength->get())/2; // Activate after half the sleep period
+		double activationTime = par("activationTime"); // This is the activation delay. Optional
+		if ( rdActivityLength != NULL )
+			activationTime += (86400.0 - rdActivityLength->get())/2; // First activate after half the sleep period
 		EV_INFO << "Initial activation time is " << activationTime << endl;
 		eventTimer->setKind(MSGKIND_ACTIVITY_START);
 		scheduleAt(simTime()+(simtime_t)activationTime, eventTimer);
@@ -250,7 +257,8 @@ void httptBrowserBase::handleDataMessage( cMessage *msg )
 			case rt_html_page:
 				EV_INFO << "HTML Document received: " << appmsg->name() << "'. Size is " << msg->byteLength() << " bytes and serial " << serial << endl;
 				if ( strlen(appmsg->payload()) != 0 ) 
-					EV_DEBUG << "Payload of " << appmsg->name() << " is: " << endl << appmsg->payload() << ", " << strlen(appmsg->payload()) << " bytes" << endl;
+					EV_DEBUG << "Payload of " << appmsg->name() << " is: " << endl << appmsg->payload() 
+							 << ", " << strlen(appmsg->payload()) << " bytes" << endl;
 				else
 					EV_DEBUG << appmsg->name() << " has no referenced resources. No GETs will be issued in parsing" << endl;
 				htmlReceived++;
@@ -311,7 +319,7 @@ void httptBrowserBase::handleDataMessage( cMessage *msg )
 				EV_DEBUG << "Requesting resource " << resourceName << endl;
 
 				// Generate a request message and push on queue for the intended recipient
-				cMessage *reqmsg = generateResourceRequest(senderWWW,resourceName,serial++,bad,refSize);
+				cMessage *reqmsg = generateResourceRequest(providerName,resourceName,serial++,bad,refSize); // TODO: CHECK HERE FOR XSITE
 				requestQueues[providerName].push_front(reqmsg);
 			}
 			// Iterate through the list of queues (one for each recipient encountered) and submit each queue.
@@ -328,14 +336,20 @@ void httptBrowserBase::handleDataMessage( cMessage *msg )
 cMessage* httptBrowserBase::generatePageRequest(string www, string pageName, bool bad, int size)
 {
 	EV_DEBUG << "Generating page request for URL " << www << ", page " << pageName << endl;
+
+	if ( www.size()+pageName.size() > MAX_URL_LENGTH ) 
+	{
+		EV_ERROR << "URL for site " << www << " exceeds allowed maximum size" << endl;
+		return NULL;
+	}
 	
 	long requestLength = (long)rdRequestSize->get();
 
 	if (pageName.size()==0) pageName="/";
 	else if (pageName[0]!='/') pageName.insert(0,"/");
 
-	char szReq[1024];
-	sprintf(szReq,"GET %s HTTP/1.1", pageName.c_str()); // TODO: Validate size
+	char szReq[MAX_URL_LENGTH+24];
+	sprintf(szReq,"GET %s HTTP/1.1", pageName.c_str());
 	httptRequestMessage *msg = new httptRequestMessage(szReq);
 	msg->setTargetUrl(www.c_str());
 	msg->setProtocol(httpProtocol);
@@ -361,6 +375,12 @@ cMessage* httptBrowserBase::generateRandomPageRequest(string www, bool bad, int 
 cMessage* httptBrowserBase::generateResourceRequest(string www, string resource, int serial, bool bad, int size)
 {
 	EV_DEBUG << "Generating resource request for URL " << www << ", resource: " << resource << endl;
+
+	if ( www.size()+resource.size() > MAX_URL_LENGTH ) 
+	{
+		EV_ERROR << "URL for site " << www << " exceeds allowed maximum size" << endl;
+		return NULL;
+	}
 	
 	long requestLength = (long)rdRequestSize->get()+size;
 
@@ -377,8 +397,8 @@ cMessage* httptBrowserBase::generateResourceRequest(string www, string resource,
 	if ( rc==rt_image ) imgResourcesRequested++;
 	else if ( rc==rt_text ) textResourcesRequested++;
 
-	char szReq[1024];
-	sprintf(szReq,"GET %s HTTP/1.1",resource.c_str());  // TODO: VALIDATE SIZE!
+	char szReq[MAX_URL_LENGTH+24];
+	sprintf(szReq,"GET %s HTTP/1.1",resource.c_str());
 
 	httptRequestMessage *msg = new httptRequestMessage(szReq);
 	msg->setTargetUrl(www.c_str());	
@@ -387,7 +407,7 @@ cMessage* httptBrowserBase::generateResourceRequest(string www, string resource,
 	msg->setSerial(serial);
 	msg->setByteLength(requestLength);   	// Add extra request size if specified
 	msg->setKeepAlive(httpProtocol==11);
-	msg->setBadRequest(bad); 					// Simulates willingly requesting a non-existing resource.
+	msg->setBadRequest(bad); 				// Simulates willingly requesting a non-existing resource.
 	msg->setKind(HTTPT_REQUEST_MESSAGE);
 
 	logRequest(msg);
@@ -403,7 +423,7 @@ void httptBrowserBase::scheduleNextBrowseEvent()
 	if ( ++reqInCurSession >= reqNoInCurSession )	
 	{
 		// The requests in the current round are done. Lets check what to do next.
-		if ( !ENABLE_ACTIVITY_PERIOD || simTime() < acitivityPeriodEnd )
+		if ( rdActivityLength==NULL || simTime() < acitivityPeriodEnd )
 		{
 			// Scheduling next session start within an activity period.	
 			nextEventTime = simTime()+ (simtime_t)rdInterSessionInterval->get();

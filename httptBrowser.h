@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -55,7 +56,7 @@ struct SOCK_DATA_STRUCT
 /**
  * @short Browser module for OMNeT++ simulations
  *
- * A simulated browser module for OMNeT++ simulations.
+ * A simulated browser module for OMNeT++.
  *
  * The component is designed to plug into the existing INET StandardHost module as a 
  * tcpApp. See the INET documentation and examples for details. 
@@ -66,6 +67,7 @@ struct SOCK_DATA_STRUCT
  *
  * @author Kristjan V. Jonsson (kristjanvj@gmail.com)
  * @version 0.9
+ *
  * @see httptBrowserBase
  * @see httptBrowserDirect
  */

@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -40,6 +41,9 @@ import
 // and httptServerDirect modules from HttpTools.
 // See the INET documentation for StandardHost and the provided examples on how
 // to assign tcpApps to the module.
+//
+// @see httptServerDirect
+// @see httptBrowserDirect
 //
 // @author Kristjan V. Jonsson (kristjanvj@gmail.com)
 // @version 0.9

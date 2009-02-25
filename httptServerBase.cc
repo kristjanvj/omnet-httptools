@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -29,17 +30,12 @@
 
 #include "httptServerBase.h"
 
-// TODO: ENABLE LOGGING TO FILE - PARAMETER IN INI FILE
-// TODO: ENABLE SITE SCRIPS - PREDEFINED PAGES
-
-
-Define_Module(httptServerBase);
 
 void httptServerBase::initialize()
 {
 	ll = par("logLevel");
 
-    const char *address = par("address"); // TODO: CHECK USE OF ADDRESS - SKIP PARAMETER??
+//    const char *address = par("address"); // TODO: CHECK USE OF ADDRESS - SKIP PARAMETER??
 
 	wwwName = (const char*)par("www");
 	if ( wwwName.size() == 0 )
@@ -60,11 +56,13 @@ void httptServerBase::initialize()
 	cXMLElement *rootelement = par("config").xmlValue();
 	if ( rootelement==NULL ) error("Configuration file is not defined");
 
+	// Initialize the distribution objects for random browsing
+ 	// @todo Skip initialization of random objects for scripted servers?
 	cXMLAttributeMap attributes;
 	cXMLElement *element;
 	rdObjectFactory rdFactory;
-	// Inter-session interval
-	element = rootelement->getFirstChildWithTag("replyDelay"); // TODO: CHECK USE OF DELAY IN SOCKET APPLICATIONS
+	// The reply delay
+	element = rootelement->getFirstChildWithTag("replyDelay");
 	if ( element==NULL ) error("Reply delay parameter undefined in XML configuration");
 	attributes = element->getAttributes();
 	rdReplyDelay = rdFactory.create(attributes);
@@ -118,7 +116,6 @@ void httptServerBase::initialize()
 	registerWithController();
 
 	// Initialize statistics
-	maxMsgDelay = 0;
     msgsRcvd = msgsSent = bytesRcvd = bytesSent = 0;
 	htmlDocsServed = imgResourcesServed = textResourcesServed = badRequests = 0;
 
@@ -154,7 +151,7 @@ void httptServerBase::finish()
 
 void httptServerBase::handleMessage(cMessage *msg)
 {
-	// Override in derived classes - TODO: Pure virtual?
+	// Override in derived classes
 }
 
 cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
@@ -169,21 +166,13 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	logRequest(request);
 			
 	simtime_t processingDelay = 0;
-
-/*	httptNodeBase *senderModule = dynamic_cast<httptNodeBase*>(request->senderModule());
-	if ( senderModule == NULL )
-	{
-		EV_ERROR << "Unspecified sender module in received message " << request->name() << endl;
-		delete request;
-		return NULL;
-	} */
 	
 	bool recipientError=false;
 	if ( extractServerName(request->targetUrl()) != wwwName )
 	{
 		// This should never happen but lets check
-		EV_ERROR << "Received message indended for " << request->targetUrl() << endl; // TODO: Hard error?
-//		delete request;
+//		EV_ERROR << "Received message indended for " << request->targetUrl() << endl; // TODO: Hard error?
+		error("Received message indended for '%s'", request->targetUrl()); // TODO: DEBUG HERE
 		return NULL;
 	}
 
@@ -197,9 +186,6 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 		EV_ERROR << "Invalid request string: " << request->heading() << endl;
 		replymsg = generateErrorReply(request,400);
 		logResponse(replymsg);
-//		sendDirectToModule(senderModule,replymsg,0.0,rdReplyDelay);
-//		sendToClient(senderModule,replymsg);
-//		delete request;
 		return replymsg;
 	}
 
@@ -211,7 +197,6 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	}
 	else if ( res[0] == "GET" )
 	{
-//		EV_DEBUG << "Handling GET request" << endl;
 		replymsg = handleGetRequest(request,res[1]); // Pass in the resource string part
 	}
 	else
@@ -221,13 +206,8 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	}	
 
 	if ( replymsg!=NULL )
-//	{
 		logResponse(replymsg);
-//		sendDirectToModule(senderModule,replymsg,0.0,rdReplyDelay);
-//		sendToClient(senderModule,replymsg);
-//	}
 
-//	delete request;		
 	return replymsg;
 }
 
@@ -244,7 +224,6 @@ httptReplyMessage* httptServerBase::handleGetRequest( httptRequestMessage *reque
 	}
 
 	CONTENT_TYPE_ENUM cat = getResourceCategory(req);
-//	EV_DEBUG << "Category: " << cat << endl;
 
 	if ( cat==rt_html_page )
 	{
@@ -287,7 +266,6 @@ httptReplyMessage* httptServerBase::handleGetRequest( httptRequestMessage *reque
 	}
 }
 
-// TODO: REVISE
 httptReplyMessage* httptServerBase::generateDocument( httptRequestMessage *request, const char* resource, int size )
 {
 	EV_DEBUG << "Generating HTML document for request " << request->name() << " from " << request->senderModule()->name() << endl;
@@ -311,7 +289,7 @@ httptReplyMessage* httptServerBase::generateDocument( httptRequestMessage *reque
 	}
 	else
 	{
-		replymsg->setPayload(generateRandomBody().c_str()); 
+		replymsg->setPayload(generateBody().c_str()); 
 	}
 	
 	if ( size==0 )
@@ -372,7 +350,7 @@ httptReplyMessage* httptServerBase::generateErrorReply( httptRequestMessage *req
 	return replymsg;	
 }
 
-string httptServerBase::generateRandomBody()
+string httptServerBase::generateBody()
 {
 	int numResources = (int)rdNumResources->get();
 	int numImages = (int)(numResources*rdTextImageResourceRatio->get());
@@ -438,7 +416,6 @@ void httptServerBase::readSiteDefinition(string file)
 			// Section			
 			siteSection = sectionsub == "HTML";
 			resourceSection = sectionsub == "RESOURCES";
-//			EV_DEBUG << "Found section " << sectionsub << endl;
 		}
 		else
 		{
@@ -477,7 +454,6 @@ void httptServerBase::readSiteDefinition(string file)
 				EV_DEBUG << "Adding html page definition " << key << ". The page size is " << size << endl;
 				htmlPages[key].size=size;
 				htmlPages[key].body=body;
-//				EV_DEBUG << "The body is\n" << body << endl;
 			}
 			else if ( resourceSection )
 			{
@@ -538,12 +514,5 @@ string httptServerBase::readHtmlBodyFile( string file, string path )
 	htmlfilestream.close();
 	return body;
 }
-
-/*
-void httptServerBase::sendToClient( httptNodeBase *receiver, cMessage *message )
-{
-	// Override in derived classes - TODO: pure virtual?
-}
-*/
 
 
