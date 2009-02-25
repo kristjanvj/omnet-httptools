@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -31,20 +32,23 @@
 //
 // httptBrowser
 //
+// The component is derived from httptBrowseBase and is intended to be used
+// with the INET frameworks StandardHost and TCP/IP stack modeling. 
+//
+// See the API documentation for httptBrowserBase and httptBrowser for further details.
+// See the INET documentation for more information on StandardHost and the TCP/IP stack.
+//
 // @version 0.9 
 // @author  Kristjan V. Jonsson
 //
 simple httptBrowser
 	parameters:
-		address: string,  // TODO: REMOVE?
-		port: numeric const, // TODO: REMOVE?
-		config: xml,
-		logLevel: numeric,
-		httpProtocol: numeric,
-		reconnectInterval: numeric, // TODO: CHECK USE
-		logFile: string,		
-		scriptFile: string,
-		activationTime: numeric;
+		config: xml,				// The XML configuration file for the browser
+		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+		logFile: string,			// Name of a browser log file. Browse events are appended, allowing sharing of file for multiple browsers.
+		scriptFile: string,			// The browsing script file. Blank to disable.
+		activationTime: numeric;	// The initial activation delay. Zero to disable.
 	gates:
 		in: tcpIn;
 		out: tcpOut;

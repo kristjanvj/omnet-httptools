@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -31,21 +32,27 @@
 //
 // httptServerDirect
 //
+// A Web server module for OMNeT++ simulations and direct message passing between modules. 
+// This module is intended for use with the DirectHost module and plugs in as a tcpApp. 
+//
+// @see httptServerBase
+// @see httptServer
+// @see DirectHost
+//
 // @version 0.9 
 // @author  Kristjan V. Jonsson
 //
 simple httptServerDirect
 	parameters:
-		address: string,
-		www: string,
-		port: numeric const,
-		httpProtocol: numeric,
-		linkSpeed: numeric,
-		logLevel: numeric,
-		logFile: string,
-		siteDefinition: string,
-		config: xml,
-		activationTime: numeric;
+		www: string,				// The WWW name of the server
+		port: numeric const,		// The listening port number
+		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+		logFile: string,			// Name of server log file. Events are appended, allowing sharing of file for multiple servers.
+		siteDefinition: string,		// The site script file. Blank to disable.
+		config: xml,				// The XML configuration file for random sites
+		activationTime: numeric,	// The initial activation delay. Zero to disable.
+		linkSpeed: numeric;			// Used to model transmission delays.
 	gates:
 		in: tcpIn;
 		out: tcpOut;

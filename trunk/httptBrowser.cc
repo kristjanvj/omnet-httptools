@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -71,7 +72,7 @@ void httptBrowser::handleMessage(cMessage *msg)
 		{
 			// Handle errors. @todo hard error?
 			EV_WARNING << "No socket found for message " << msg->name() << endl;
-			delete msg;  // TODO: CHECK HANDLING HERE
+			delete msg;
 			return;
 		}
 		// Submit to the socket handler. Calls the TCPSocket::CallbackInterface methods.		

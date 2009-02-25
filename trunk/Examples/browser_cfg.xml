@@ -9,7 +9,7 @@
 		  * InterRequestInterval is the interval between requests made within a browsing session.
 		  * requestSize describes the size of requests made for resources.
 		  * reqInSession describes the number of requests made by the user within a browsing session.
-		 A random distribution is used for each of the parameters. normal, uniform, exponential and histogram random
+		 A random distribution is used for each of the parameters. normal, uniform, exponential, zipf and histogram random
 		 distributions are supported. See the documentation for more details.
 	-->
     <user-profile id="light">

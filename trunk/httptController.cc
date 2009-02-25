@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -29,15 +30,7 @@
 
 #include "httptController.h"
 
-// TODO: ENABLE ASSIGNING POPULARITY TO SERVERS AND IMPLEMENT GETTING RANDOM SERVERS ACCORDING TO THAT
-
-
 Define_Module(httptController);
-
-
-// TODO: Enable web servers to add their info to the component
-// TODO: Enable browsers to query for the host name
-// TODO: Allow the component to assign popularity to sites
 
 void httptController::initialize(int stage)
 {
@@ -53,7 +46,7 @@ void httptController::initialize(int stage)
 
 		cXMLAttributeMap attributes;
 		cXMLElement *element;
-		// Inter-session interval
+		// Initialize the random object for random site selection
 		rdObjectFactory rdFactory;
 		element = rootelement->getFirstChildWithTag("serverPopularityDistribution");
 		if ( element==NULL ) error("Server popularity distribution parameter undefined in XML configuration");
@@ -62,11 +55,14 @@ void httptController::initialize(int stage)
 		if ( rdServerSelection==NULL) error("Server popularity distribution random object could not be created");
 		EV_INFO << "Using " << rdServerSelection->typeStr() << " for server popularity distribution." << endl;
 
-		pspecial = 0.0;	
+		pspecial = 0.0;	// No special events by defaault
 		totalLookups = 0;
 	}
 	else if ( stage==1 )
 	{
+		// Two stages are required to finalize the initialization of the random object for the site selection
+		// once the final number of web sites is known. 
+
 		EV_INFO << "Initializing HTTP controller. Second stage" << endl; 
 		EV_INFO << "Registered servers are " << webSiteList.size() << endl;
 		// Finish initialization of the probability distribution objects which depend on the number of servers.
@@ -122,7 +118,8 @@ void httptController::registerWWWserver( const char* objectName, const char* www
 
 	string serverUrl = extractServerName(wwwName);
 
-	EV_DEBUG << "Registering www server: " << objectName << ", " << wwwName << " (" << port << "). Activation time is " << activationTime << endl;
+	EV_DEBUG << "Registering www server: " << objectName << ", " << wwwName 
+			 << " (" << port << "). Activation time is " << activationTime << endl;
 
 	if ( webSiteList.find(wwwName) != webSiteList.end() )
 		EV_ERROR << "Server " << wwwName << " is already registered\n";
@@ -142,7 +139,6 @@ void httptController::registerWWWserver( const char* objectName, const char* www
 
 	if ( en->module == NULL )
 		error("Server %s does not have a WWW module", wwwName);
-//		EV_ERROR << "Server " << wwwName << " does not have a WWW module\n";
 
 	webSiteList[en->name] = en;
 
@@ -300,7 +296,6 @@ cModule* httptController::getTcpApp(string node)
 	return receiverModule->submodule("tcpApp",0); // TODO: CHECK INDEX
 }
 
-// TODO: ALLOW CURRENT PROBABILITY TO BE MULTIPLIED RATHER THAN SPECIFYING A NEW ONE
 void httptController::setSpecialStatus( const char* www, ServerStatus status, double p, double amortize )
 {	
 	if ( webSiteList.find(www) == webSiteList.end() ) // The www name is not in the map
@@ -418,7 +413,8 @@ string httptController::listSpecials()
 	for(i=specialList.begin();i!=specialList.end();i++)
 	{
 		en=(*i);
-		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus << ";" << en->pvalue << ";" << en->pamortize << endl;
+		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus 
+			<< ";" << en->pvalue << ";" << en->pamortize << endl;
 	}
 	return str.str();
 }
@@ -431,7 +427,8 @@ string httptController::listPickOrder()
 	for( i=pickList.begin(); i!=pickList.end(); i++ )
 	{
 		en=(*i);
-		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus << ";" << en->pvalue << ";" << en->pamortize << endl;
+		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus 
+			<< ";" << en->pvalue << ";" << en->pamortize << endl;
 	}
 	return str.str();
 }
@@ -439,7 +436,6 @@ string httptController::listPickOrder()
 void httptController::parseOptionsFile(string file, string section)
 {
 	bool bSectionFound=false;
-//	cStringTokenizer tokenizer;
 	ifstream tracefilestream;
 	tracefilestream.open(file.c_str());
 	if(!tracefilestream.is_open())
@@ -503,7 +499,7 @@ WEB_SERVER_ENTRY* httptController::__getRandomServerInfo()
 {
 	WEB_SERVER_ENTRY* en;
 	int selected = 0;
-	// TODO: Check - this is a ugly hack to enable easy activation of servers - can lead to problems if no servers active!!!
+	// @todo Reimplement! This is a ugly hack to enable easy activation of servers - can lead to problems if no servers active!!!
 	do
 	{
 		if (pspecial>0.0 && bernoulli(pspecial))
@@ -521,6 +517,6 @@ WEB_SERVER_ENTRY* httptController::__getRandomServerInfo()
 		}
 		EV_DEBUG << "Activation time of the node is " << en->activationTime << " and the current time is " << simTime() << endl;
 	}
-	while(en->activationTime>simTime()); // TODO: CHECK IMPL!!!	
+	while(en->activationTime>simTime());
 	return en;
 }

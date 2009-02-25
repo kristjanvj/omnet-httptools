@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -42,7 +43,7 @@
  *
  * @see httptBrowserDirect
  *
- * @version 1.0 
+ * @version 0.9
  * @author  Kristjan V. Jonsson
  */
 class INET_API httptServer : public httptServerBase, public TCPSocket::CallbackInterface
@@ -55,41 +56,51 @@ class INET_API httptServer : public httptServerBase, public TCPSocket::CallbackI
 
 	/** @name cSimpleModule redefinitions */
 	//@{
-	protected: 
+	protected:
+		/** @brief Initialization of the component and startup of browse event scheduling */
 		virtual void initialize();
+
+		/** @brief Report final statistics */
 		virtual void finish();
 
-		/** Handle incoming messages */
+		/** @brief Handle incoming messages */
 		virtual void handleMessage(cMessage *msg);
 	//@}
 
-	/** @name TCPSocket::CallbackInterface callback methods */
+	/** @name TCPSocket::CallbackInterface methods */
 	//@{
 	protected:
-		/** Does nothing but update statistics/status. Redefine to perform or schedule first sending. */
+		/** 
+		 * @brief handler for socket established events.
+		 * Only used to update statistics.
+		 */
 		virtual void socketEstablished(int connId, void *yourPtr);
 
 		/**
-		 * Does nothing but update statistics/status. Redefine to perform or schedule next sending.
-		 * Beware: this funcion deletes the incoming message, which might not be what you want.
+		 * @brief handler for socket data arrived events
+		 * Dispatces the received message to the message handler in the base class and 
+ 		 * finishes by deleting the received message.
 		 */
 		virtual void socketDataArrived(int connId, void *yourPtr, cMessage *msg, bool urgent);
 
-		/** Since remote TCP closed, invokes close(). Redefine if you want to do something else. */
+		/** 
+		 * @brief handler for socket closed by peer event		
+		 * Does little apart from calling socket->close() to allow the TCPSocket object to close properly.
+		 */
 		virtual void socketPeerClosed(int connId, void *yourPtr);
 
-		/** Does nothing but update statistics/status. Redefine if you want to do something else, such as opening a new connection. */
+		/** 
+		 * @brief handler for socket closed event	
+		 * Cleanup the resources for the closed socket.	
+ 		 */
 		virtual void socketClosed(int connId, void *yourPtr);
 
-		/** Does nothing but update statistics/status. Redefine if you want to try reconnecting after a delay. */
+		/**
+		 * @brief handler for socket failure event
+		 * Very basic handling -- displays warning and cleans up resources.
+		 */
 		virtual void socketFailure(int connId, void *yourPtr, int code);
-
-		/** Redefine to handle incoming TCPStatusInfo. */
-		virtual void socketStatusArrived(int connId, void *yourPtr, TCPStatusInfo *status) {delete status;}
 	//@}
-
-//	protected:
-//		virtual void sendToClient( httptNodeBase *receiver, cMessage *message );
 };
 
 #endif

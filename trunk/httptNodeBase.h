@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -53,14 +54,27 @@ enum LOG_FORMAT {lf_short,lf_long};
 
 typedef deque<cMessage*> MESSAGE_QUEUE_TYPE;
 
+/**
+ * @short The base class for browser and server nodes.
+ *
+ * See the derived classes httptBrowserBase and httptServerBase for details
+ *
+ * @see httptBrowserBase
+ * @see httptServerBase
+ *
+ * @author Kristjan V. Jonsson (kristjanvj@gmail.com)
+ * @version 0.9
+ */
 class httptNodeBase : public cSimpleModule
 {
 	protected:
-		/** Log level 2: Debug, 1: Info; 0: None */
+		/** Log level 2: Debug, 1: Info; 0: Errors and warnings only */
 		int ll; 
 		
-		string wwwName;
-		int port;
+		/** The WWW name of the node. */
+		string wwwName; 
+		/** The listening port of the node. Really only applies to servers. */
+		int port; // @todo Move to server base class?
 
 		/** The linkspeed in bits per second. Only needed for direct message passing transmission delay calculations. */
 		unsigned long linkSpeed;
@@ -68,12 +82,18 @@ class httptNodeBase : public cSimpleModule
 		/** The http protocol. http/1.0: 10 ; http/1.1: 11 */
 		int httpProtocol; 				 	
 
+		/** The log file name for message generation events */
 		string logFileName;
+		/** Enable/disable of logging message generation events to file */
 		bool enableLogging;
+		/** The format used to log message events to the log file (if enabled) */
 		LOG_FORMAT outputFormat;
+		/** Enable/disable logging of message events to the console */
 		bool m_bDisplayMessage;
+		/** Enable/disable of logging message contents (body) to the console. Only if m_bDisplayMessage is set */
 		bool m_bDisplayResponseContent;
 
+		// Basic statistics
 		long msgsSent;
 		long msgsRcvd;
 		long bytesSent;
@@ -82,26 +102,33 @@ class httptNodeBase : public cSimpleModule
 	public:
 		httptNodeBase();
 
+		/** Return the WWW name of the node */
 		const char* getWWW();
 
 	protected:
+		/** Send a number of messages direct to the specified module. Messages must be generated and enqueued beforehand. */
 		void sendDirectToModule( httptNodeBase *receiver, MESSAGE_QUEUE_TYPE *queue, simtime_t baseDelay=0.0, rdObject *rd=NULL );
+		/** Send a single message direct to the specified module. */
 		double sendDirectToModule( httptNodeBase *receiver, cMessage *message, simtime_t constdelay=0.0, rdObject *rd=NULL );
 
+		/** Log a request message to file and optionally display in console */
 		void logRequest( const httptRequestMessage* httpRequest );
+		/** Log a response message to file and optionally display in console */
 		void logResponse( const httptReplyMessage* httpResponse );
+		/** Used by logRequest and logResponse to write the formatted message to file */
 		void logEntry( string line );
 
+		/** Format a request message in compact semicolon-delimited format */
 		string formatHttpRequestShort( const httptRequestMessage* httpRequest );
+		/** Format a response message in compact semicolon-delimited format */
 		string formatHttpResponseShort( const httptReplyMessage* httpResponse );
+		/** Format a request message in a more human-readable format */
 		string formatHttpRequestLong( const httptRequestMessage* httpRequest );
+		/** Format a response message in a more human-readable format */
 		string formatHttpResponseLong( const httptReplyMessage* httpResponse );
 
 		/** Calculate the transmission delay for the message msg */
 		double transmissionDelay( cMessage *msg );
-
-		/** A factory function for generating a random distribution object from xml specification parameters */
-//		rdObject* createDistrObject( cXMLAttributeMap attributes );
 };
 
 #endif /* __httptNodeBase_H_ */

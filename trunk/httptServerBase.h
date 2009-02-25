@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -34,16 +35,21 @@
 #include <vector>
 #include "httptNodeBase.h"
 
+// Event message kinds
 #define MSGKIND_START_SESSION 0
 #define MSGKIND_NEXT_MESSAGE  1
 #define MSGKIND_SCRIPT_EVENT  2
 
+// Log level definitions
 #define LL_NONE 0 
 #define LL_INFO 1
 #define LL_DEBUG 2
 
 using namespace std;
 
+/**
+ * @brief Site definition data structure. Used for scripted sites. 
+ */
 struct SITE_DEF_STRUCT
 {
 	long size;
@@ -51,12 +57,19 @@ struct SITE_DEF_STRUCT
 };
 
 /**
- * @brief httptServerDirect module 
+ * @brief Web server base class 
  *
  * This module implements a flexible Web server. It is part of the HttpTools project
- * and should be used in conjunction with a number of clients running the httptBrowserDirect.
+ * and should be used in conjunction with a number of browsing clients.
  *
- * @see httptBrowserDirect
+ * The server base class cannot be instantiated directly in a simulation. Use rather
+ * the httptServer for INET TCP/IP appliations or httptServerDirect for direct message passing.
+ * See those classes for details. See the INET documentation for details on the StandardHost 
+ * and the TCP/IP simulation.
+ *
+ * @see httptServer
+ * @see httptServerDirect
+ * @see DirectHost.
  *
  * @version 1.0 
  * @author  Kristjan V. Jonsson
@@ -64,50 +77,67 @@ struct SITE_DEF_STRUCT
 class INET_API httptServerBase : public httptNodeBase
 {
   	protected:
-		simtime_t maxMsgDelay;
-
+		/** set to true if a scripted site definition is used */
 		bool scriptedMode;
+		/** A map of html pages, keyed by a resource URL. Used in scripted mode. */
 		map<string,SITE_DEF_STRUCT> htmlPages;
+		/** A map of resource, keyed by a resource URL. Used in scripted mode. */
 		map<string,unsigned int> resources;
 
+		// Basic statistics
 		long htmlDocsServed;
 		long imgResourcesServed;
 		long textResourcesServed;
 		long badRequests;
 
-		simtime_t scheduleHTTP(cMessage *msg, simtime_t delay=0);
-		void sendHTTP(cMessage *msg);
+		/** @name The random objects for content generation */
+		//@{
+		rdObject *rdReplyDelay;				//> The processing delay of the server.
+		rdObject *rdHtmlPageSize;			//> The HTML page size distribution for the site.
+		rdObject *rdTextResourceSize;		//> The text resource size distribution for the site.
+		rdObject *rdImageResourceSize;		//> The image resource size distribution for the site.
+		rdObject *rdNumResources;			//> Number of resources per HTML page.
+		rdObject *rdTextImageResourceRatio; //> The ratio of text resources to images referenced in HTML pages.
+		rdObject *rdErrorMsgSize;			//> The size of error messages.
+		//@}
 
-		rdObject *rdReplyDelay;
-		rdObject *rdHtmlPageSize;
-		rdObject *rdTextResourceSize;
-		rdObject *rdImageResourceSize;
-		rdObject *rdNumResources;
-		rdObject *rdTextImageResourceRatio;
-		rdObject *rdErrorMsgSize;
-
+		/** The activation time of the server -- initial startup delay. */
 		simtime_t activationTime;
 
-	protected: 
+	/** @name cSimpleModule redefinitions */
+	//@{
+	protected:
+		/** Initialization of the component and startup of browse event scheduling */
 		virtual void initialize();
-		virtual void handleMessage(cMessage *msg);
+
+		/** Report final statistics */
 		virtual void finish();
 
+		/** Handle incoming messages */
+		virtual void handleMessage(cMessage *msg)=0;
+	//@}
+
 	protected:
+		/** Generate a HTML document in response to a request. */
 		httptReplyMessage* generateDocument( httptRequestMessage *request, const char* resource, int size=0 );
+		/** Generate a resource message in response to a request. */
 		httptReplyMessage* generateResourceMessage( httptRequestMessage *request, string resource, CONTENT_TYPE_ENUM category );
+		/** Handle a received HTTP GET request */
 		httptReplyMessage* handleGetRequest( httptRequestMessage *request, string resource );
+		/** Generate a error reply in case of invalid resource requests. */
 		httptReplyMessage* generateErrorReply( httptRequestMessage *request, int code );
-		virtual string generateRandomBody();
+		/** Create a random body according to the site content random distributions. */
+		virtual string generateBody();
 
 	protected:
+		/** Handle a received data message, e.g. check if the content requested exists. */
 		cMessage* handleReceivedMessage( cMessage *msg );
+		/** Register the server object with the controller. Called at initialization (simulation startup). */
 		void registerWithController();
+		/** Read a site definition from file if a scripted site definition is used. */
 		void readSiteDefinition(string file);
+		/** Read a html body from a file. Used by readSiteDefinition. */
 		string readHtmlBodyFile( string file, string path );
-
-//	protected:
-//		virtual void httptServerBase::sendToClient( httptNodeBase *receiver, cMessage *message );
 };
 
 #endif

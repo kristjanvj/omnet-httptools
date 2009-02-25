@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -31,20 +32,27 @@
 //
 // httptServer
 //
+// A Web server module for OMNeT++ simulations. This module is intended for use with the
+// INET StandardHost module and plugs in as a tcpApp. The INET TCP/IP stack modeling is
+// used for transport. See the INET documentation for more details.
+//
+// @see httptServerBase
+// @see httptServerDirect
+// @see DirectHost
+//
 // @version 0.9 
 // @author  Kristjan V. Jonsson
 //
 simple httptServer
 	parameters:
-		address: string, // TODO: REMOVE?
-		www: string,
-		port: numeric const,
-		httpProtocol: numeric,
-		logLevel: numeric,
-		logFile: string,
-		siteDefinition: string,
-		config: xml,
-		activationTime: numeric;
+		www: string,				// The WWW name of the server
+		port: numeric const,		// The listening port number
+		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+		logFile: string,			// Name of server log file. Events are appended, allowing sharing of file for multiple servers.
+		siteDefinition: string,		// The site script file. Blank to disable.
+		config: xml,				// The XML configuration file for random sites
+		activationTime: numeric;	// The initial activation delay. Zero to disable.
 	gates:
 		in: tcpIn;
 		out: tcpOut;

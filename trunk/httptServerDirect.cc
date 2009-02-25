@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -37,7 +38,7 @@ void httptServerDirect::initialize()
 
 	// Set the linkspeed
 	linkSpeed = par("linkSpeed");
-	if ( linkSpeed == 0 ) linkSpeed = 10*1024*1024;
+	if ( linkSpeed == 0 ) linkSpeed = 1024*1024; // Default is 1 MBit/s
 }
 
 void httptServerDirect::finish()
@@ -50,7 +51,7 @@ void httptServerDirect::handleMessage(cMessage *msg)
 	EV_DEBUG << "Handling received message " << msg->name() << endl;
     if (msg->isSelfMessage())
     {
-//        sendHTTP(msg);
+		// Self messages are not used at the present
     }
 	else
 	{
@@ -66,18 +67,10 @@ void httptServerDirect::handleMessage(cMessage *msg)
 		cMessage* reply = handleReceivedMessage(msg);
 		// Echo back to the requester
 		if ( reply!=NULL )
-			sendDirectToModule(senderModule,reply,0.0,rdReplyDelay); // TODO: REVIEW
+			sendDirectToModule(senderModule,reply,0.0,rdReplyDelay);
 		delete msg;
 	}
 }
-
-// TODO: REMOVE?
-/*
-void httptServerDirect::sendToClient( httptNodeBase *receiver, cMessage *message )
-{
-	sendDirectToModule(receiver,message,0.0,NULL); // TODO: REVIEW
-}
-*/
 
 
 

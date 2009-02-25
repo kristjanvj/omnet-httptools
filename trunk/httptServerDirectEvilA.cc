@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -29,15 +30,22 @@
 
 #include "httptServerDirectEvilA.h"
 
-// TODO: ENABLE LOGGING TO FILE - PARAMETER IN INI FILE
-// TODO: ENABLE SITE SCRIPS - PREDEFINED PAGES
-
-
 Define_Module(httptServerDirectEvilA);
 
-std::string httptServerDirectEvilA::generateDocument( const char* urlstring )
+void httptServerDirectEvilA::initialize()
 {
-	int numImages = 100+(int)uniform(0,100);
+	httptServerDirect::initialize();
+
+	badLow  = par("minBadRequests");
+	badHigh = par("maxBadRequests");
+
+	EV_INFO << "Badguy " << wwwName << " was initialized to launch an attack on www.good.com" << endl;
+	EV_INFO << "Minimum " << badLow << " and maximum " << badHigh << " bad requests for each hit." << endl;
+}
+
+std::string httptServerDirectEvilA::generateBody()
+{
+	int numImages = badLow+(int)uniform(0,badHigh-badLow);
 	double rndDelay;
 	string result;
 
@@ -45,7 +53,7 @@ std::string httptServerDirectEvilA::generateDocument( const char* urlstring )
 	for( int i=0; i<numImages; i++ )
 	{		
 		rndDelay = 2.0+uniform(0,10);
-		sprintf(tempBuf, "%s%.4d;%s;%f\n", "IMG", i, "www.good.com", rndDelay);
+		sprintf(tempBuf, "IMG%.4d.jpg;%s;%f\n", i, "www.good.com", rndDelay);
 		result.append(tempBuf);
 	}
 

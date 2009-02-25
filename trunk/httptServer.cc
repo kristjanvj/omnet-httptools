@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -35,10 +36,7 @@ void httptServer::initialize()
 {
 	httptServerBase::initialize();
 
-//    const char *address = par("address"); // Not needed
     int port = par("port");
-//    delay = par("replyDelay");
-//    maxMsgDelay = 0;
 
     TCPSocket listensocket;
     listensocket.setOutputGate(gate("tcpOut"));
@@ -71,7 +69,7 @@ void httptServer::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage())
 	{
-//		handleSelfMessages(msg);
+		// Self messages not used at the moment
 	}
 	else
 	{
@@ -88,17 +86,6 @@ void httptServer::handleMessage(cMessage *msg)
 		}
 		EV_DEBUG << "Process the message " << msg->name() << endl;
 		socket->processMessage(msg);
-/*		if ( msg->kind()==HTTPT_REQUEST_MESSAGE )
-		{
-			cMessage *reply = handleReceivedMessage(msg);
-			socket->send(reply);
-		}
-		else
-		{
-			EV_ERROR << "Unexpected message " << msg->name() << ", kind " << msg->kind() << endl;
-			delete msg;			
-		}  */
-		// TODO: CHECK DELETE FOR MSG
 	}
 }
 
@@ -108,7 +95,6 @@ void httptServer::socketEstablished(int connId, void *yourPtr)
 	socketsOpened++;
 }
 
-// TODO: REMOVE??
 void httptServer::socketDataArrived(int connId, void *yourPtr, cMessage *msg, bool urgent)
 {
 	if ( yourPtr==NULL )
@@ -120,23 +106,16 @@ void httptServer::socketDataArrived(int connId, void *yourPtr, cMessage *msg, bo
 
 	// Should be a httptReplyMessage
 	EV_DEBUG << "Socket data arrived on connection " << connId << ". Message=" << msg->name() << ", kind=" << msg->kind() << endl;
-/*	if ( msg->kind()==HTTPT_REQUEST_MESSAGE )  // TODO: CHECK VALIDATION
-	{ */
-		cMessage *reply = handleReceivedMessage(msg);
-		if ( reply!=NULL )
-		{
-			socket->send(reply);
-			msgsSent++;
-			bytesSent+=msg->byteLength();
-		}
-		delete msg;
-		// TODO: Check if server should close connection here
-/*	}
-	else
+
+	// call the message handler to process the message.
+	cMessage *reply = handleReceivedMessage(msg);
+	if ( reply!=NULL )
 	{
-		delete msg;
-		EV_ERROR << "Invalid message " << msg->name() << " received on socket with id " << connId << ". kind=" << msg->kind() << endl; 
-	}  */
+		socket->send(reply); // Send to socket if the reply is non-zero.
+		msgsSent++;
+		bytesSent+=msg->byteLength();
+	}
+	delete msg; // Delete the received message here. Must not be deleted in the handler!
 }
 
 void httptServer::socketPeerClosed(int connId, void *yourPtr)
@@ -152,8 +131,7 @@ void httptServer::socketPeerClosed(int connId, void *yourPtr)
     if (socket->state()==TCPSocket::PEER_CLOSED)
     {
         EV_INFO << "remote TCP closed, closing here as well. Connection id is " << connId << endl;
-        socket->close();
-		// TODO: Cleanup etc?
+        socket->close();  // Call the close method to properly dispose of the socket.
     }
 }
 
@@ -166,6 +144,7 @@ void httptServer::socketClosed(int connId, void *yourPtr)
 		EV_ERROR << "Socket establish failure. Null pointer" << endl;
 		return;
 	}
+	// Cleanup
 	TCPSocket *socket = (TCPSocket*)yourPtr;
 	sockCollection.removeSocket(socket);
 	delete socket;
@@ -189,19 +168,11 @@ void httptServer::socketFailure(int connId, void *yourPtr, int code)
 		EV_WARNING << "Connection reset!\\n";
 	else if (code==TCP_I_CONNECTION_REFUSED)
 		EV_WARNING << "Connection refused!\\n";
-//	else if (code==TCP_I_TIMEOUT)
-//		EV_WARNING << "Connection timed out!\\n";
 
-	sockCollection.removeSocket(socket); // TODO: CHECK
+	// Cleanup
+	sockCollection.removeSocket(socket);
 	delete socket;
 }
-
-/*
-void httptServer::sendToClient( httptNodeBase *receiver, cMessage *message )
-{
-
-}
-*/
 
 
 

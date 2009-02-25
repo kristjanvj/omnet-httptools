@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -57,13 +58,17 @@ class INET_API httptBrowserDirect : public httptBrowserBase
 		/** Report final statistics */
 		virtual void finish();
 
+		/** Handle incoming messages. See the parent class for details. */
 		virtual void handleMessage(cMessage *msg);
 	//@}
 
+	/** @name Implementation of methods for sending requests to a server. See parent class for details. */
+	//@{
 	protected:
 		virtual void sendRequestToServer( BROWSE_EVENT_ENTRY be );
 		virtual void sendRequestToRandomServer();
 		virtual void sendRequestsToServer( string www, MESSAGE_QUEUE_TYPE queue );
+	//@}
 };
 
 #endif

@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -31,14 +32,18 @@
 //
 // httptController
 //
+// A controller object for OMNeT++ simulations which use the HttpTools browser and
+// server components. A single controller must exist at the scenario level in each
+// simulation.
+//
 // @version 0.9 
 // @author  Kristjan V. Jonsson
 //
 simple httptController
 	parameters:
-		logLevel: numeric,
-		config: xml,
-		events: string,
-		eventsSection: string;
+		logLevel: numeric,		// The log level: 2: Debug, 1: Info; 0: Errors and warnings only.
+		config: xml,			// XML configuration file.
+		events: string,			// Popularity modification events defintion file.
+		eventsSection: string;	// Section within the popularity modification file, if one is defined.
 endsimple
 

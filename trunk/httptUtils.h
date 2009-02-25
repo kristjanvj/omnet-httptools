@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -40,6 +41,7 @@
 # include <unistd.h>
 #endif
 
+/** @brief type of returned content. Used in http responses. */
 enum CONTENT_TYPE_ENUM {rt_unknown,rt_html_page,rt_image,rt_text};
 
 using namespace std;

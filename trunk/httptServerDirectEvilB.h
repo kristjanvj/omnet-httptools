@@ -8,7 +8,8 @@
 // behaviour in a high-fidelity manner along with a highly configurable 
 // Web server component.
 //
-// Maintainer: Kristjan V. Jonsson LDSS kristjanvj04@ru.is
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ***************************************************************************
 //
@@ -27,8 +28,8 @@
 //
 // ***************************************************************************
 
-#ifndef __httptServerDirectEvilA_H_
-#define __httptServerDirectEvilA_H_
+#ifndef __httptServerDirectEvilB_H_
+#define __httptServerDirectEvilB_H_
 
 #include <string>
 #include "httptServerDirect.h"
@@ -36,23 +37,28 @@
 using namespace std;
 
 /**
- * @brief httptServerDirect module 
+* @brief An evil attacker server demonstration - type B
  *
- * This object models a malicious web site which serves documents with URL references
- * to resources on a 3rd party site. The length and number of resources which is requested
- * by the receiving browser contributes to a DDoS attack.
+ * Demonstrates subclassing the server to create a custom site. This site is an attacker -- a puppetmaster --
+ * which serves HTML pages containing attack code. In this case, we are simulating JavaScript attack code which prompts
+ * the unsuspecting browser to issue a number of requests for non-existing resources (random URLs) to the victim site.
+ * The generateBody virtual function is redefined to create a page containing the attack code.
  *
  * @see httptServerDirect
  *
- * @version 1.0 
+ * @version 0.9
  * @author  Kristjan V. Jonsson
  */
 class INET_API httptServerDirectEvilB : public httptServerDirect
 {
+	private:
+		int badLow;
+		int badHigh;
 	protected:
-		virtual string generateDocument( const char* urlstring );
+		virtual void initialize();
+		virtual string generateBody();
 };
 
-#endif /* httptServerDirectEvilA */
+#endif /* httptServerDirectEvilB */
 
 

@@ -10,6 +10,7 @@
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
 // ----------------------------------------------------------------------------
 //
@@ -31,20 +32,31 @@
 //
 // httptServerDirectEvilA
 //
+// Demonstrates subclassing the server to create a custom site. This site is an attacker -- a puppetmaster --
+// which serves HTML pages containing attack code. In this case, we are simulating JavaScript attack code which prompts
+// the unsuspecting browser to request a number of images from a wictim site.
+// The generateBody virtual function is redefined to create a page containing the attack code.
+//
+// This module definition has two additional parameters to the standard httptServerDirect definition:
+// * minBadRequests specifies the lower bound on bad requests caused to be sent to the wictim by the browser.
+// * maxBadRequests specifies the upper bound on bad requests caused to be sent to the wictim by the browser.
+//
 // @version 0.9 
 // @author  Kristjan V. Jonsson
 //
 simple httptServerDirectEvilA
 	parameters:
-		address: string,
-		www: string,
-		port: numeric const,
-		httpProtocol: numeric,
-		linkSpeed: numeric,
-		logLevel: numeric,
-		logFile: string,
-		config: xml,
-		activationTime: numeric;
+		www: string,				// The WWW name of the server
+		port: numeric const,		// The listening port number
+		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+		logFile: string,			// Name of server log file. Events are appended, allowing sharing of file for multiple servers.
+		siteDefinition: string,		// The site script file. Blank to disable.
+		config: xml,				// The XML configuration file for random sites
+		activationTime: numeric,	// The initial activation delay. Zero to disable.
+		linkSpeed: numeric,			// Used to model transmission delays.
+		minBadRequests: numeric,	// The lower bound of bad requests.
+		maxBadRequests: numeric;	// The upper bound of bad requests
 	gates:
 		in: tcpIn;
 		out: tcpOut;
