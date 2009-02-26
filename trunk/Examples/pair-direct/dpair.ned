@@ -1,19 +1,22 @@
 
+// ----------------------------------------------------------------------------
 //
-// pair scenario
+// HttpTools Project
 //
-// Scenario definition for our WWW test - the DDoS scenario.
+// This file is a part of the HttpTools project. The project was created at
+// Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
+// Its purpose is to create a set of OMNeT++ components to simulate browsing
+// behaviour in a high-fidelity manner along with a highly configurable 
+// Web server component.
 //
-// Reykjavik University
-// LDSS - Laboratory for Dependable Secure Systems
-// Kristján V. Jónsson
-// November 2008
+// Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
+// Project home page: code.google.com/p/omnet-httptools
 //
+// ----------------------------------------------------------------------------
 //
 // This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
+// modify it under the terms of the GNU General Public License version 3
+// as published by the Free Software Foundation.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,13 +27,15 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-
+// ----------------------------------------------------------------------------
 
 import
     "DirectHost",
     "httptController";
 
-
+//
+// Simple scenario with a pair of nodes. Direct message passing used.
+//
 module httptDirectPair
     submodules:
         controller: httptController;
