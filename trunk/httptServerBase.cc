@@ -35,8 +35,6 @@ void httptServerBase::initialize()
 {
 	ll = par("logLevel");
 
-//    const char *address = par("address"); // TODO: CHECK USE OF ADDRESS - SKIP PARAMETER??
-
 	wwwName = (const char*)par("www");
 	if ( wwwName.size() == 0 )
 	{
@@ -128,6 +126,8 @@ void httptServerBase::initialize()
     WATCH(imgResourcesServed);
     WATCH(textResourcesServed);
     WATCH(badRequests);
+
+	updateDisplay();
 }
 
 void httptServerBase::finish()
@@ -149,9 +149,31 @@ void httptServerBase::finish()
     recordScalar("bad.requests", badRequests);
 }
 
+void httptServerBase::updateDisplay()
+{
+	if ( ev.isGUI() )
+	{
+		char buf[1024];
+		sprintf( buf, "%ld", htmlDocsServed );
+		parentModule()->displayString().setTagArg("t",0,buf);
+	
+		if ( activationTime<=simTime() )
+    	{
+			parentModule()->displayString().setTagArg("i2",0,"status/up");
+			parentModule()->displayString().setTagArg("i2",1,"green");
+		}
+		else
+		{
+			parentModule()->displayString().setTagArg("i2",0,"status/down");
+			parentModule()->displayString().setTagArg("i2",1,"red");
+		}
+	}
+}
+
 void httptServerBase::handleMessage(cMessage *msg)
 {
 	// Override in derived classes
+	updateDisplay();
 }
 
 cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
@@ -171,7 +193,6 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	if ( extractServerName(request->targetUrl()) != wwwName )
 	{
 		// This should never happen but lets check
-//		EV_ERROR << "Received message indended for " << request->targetUrl() << endl; // TODO: Hard error?
 		error("Received message indended for '%s'", request->targetUrl()); // TODO: DEBUG HERE
 		return NULL;
 	}
@@ -379,7 +400,7 @@ void httptServerBase::registerWithController()
 	cModule * controller = simulation.systemModule()->submodule("controller");
 	if ( controller == NULL )
 		error("Controller module not found");
-	((httptController*)controller)->registerWWWserver(parentModule()->fullName(),wwwName.c_str(),port,INSERT_RANDOM,activationTime);
+	((httptController*)controller)->registerWWWserver(parentModule()->fullName(),wwwName.c_str(),port,INSERT_END,activationTime);
 }
 
 void httptServerBase::readSiteDefinition(string file)
