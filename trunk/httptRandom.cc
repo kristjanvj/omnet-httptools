@@ -145,8 +145,9 @@ double rdExponential::get()
 	return val;
 }
 
-rdHistogram::rdHistogram(rdHistogramBins bins)
+rdHistogram::rdHistogram(rdHistogramBins bins,bool zeroBased)
 {
+	m_zeroBased = zeroBased;
 	m_bins = rdHistogramBins(bins);
 	__normalizeBins();
 }
@@ -157,6 +158,8 @@ rdHistogram::rdHistogram( cXMLAttributeMap attributes )
 	if ( !_hasKey(attributes,"bins") )
 		throw "No bins specified for a histogram distribution";
 	string binstr = attributes["bins"];
+	if ( _hasKey(attributes,"zeroBased") )
+		m_zeroBased = strcmp(attributes["zeroBased"].c_str(),"true")==0;
 	__parseBinString(binstr);
 	__normalizeBins();
 }
@@ -174,13 +177,14 @@ double rdHistogram::get()
 		// First select the bin
 		bin = m_bins[i];
 		cumsum += bin.sum;
-		cumcount += bin.count;
-		if ( cumsum>val )
+		if ( cumsum >= val )
 		{
 			// Then choose from the elements in the bin
-			double n = uniform(0,bin.count);
-			return (double)cumcount+n; // Return the position of the item in the histogram data.
+			double n = uniform(1,bin.count)+cumcount;
+			if ( m_zeroBased) return n-1.0;
+			else return n;
 		}
+		cumcount += bin.count; // Keep the running count for the elements
 	}
 	return -1.0; // Default return in case something weird happens
 }
@@ -209,7 +213,6 @@ void rdHistogram::__parseBinString( string binstr )
 		sumstr = curtuple.substr(pos+1,curtuple.size()-pos-1);
 		sum = safeatof(sumstr.c_str(),0.0);
 		count = safeatoi(countstr.c_str(),0);
-		if ( count == 0 ) continue; // Nothing in this bin so lets skip it.
 		bin.count = count;
 		bin.sum = sum;
 		m_bins.push_back(bin);
@@ -222,6 +225,7 @@ void rdHistogram::__normalizeBins()
 	double sum=0;
 	for( i=0; i<m_bins.size(); i++ )
 		sum += m_bins[i].sum;
+	if ( sum==0 ) return;
 	for( i=0; i<m_bins.size(); i++ )
 		m_bins[i].sum = m_bins[i].sum/sum;
 }

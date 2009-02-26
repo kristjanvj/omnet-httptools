@@ -155,9 +155,10 @@ class rdHistogram : public rdObject
 {
 	protected:
 		rdHistogramBins m_bins;
+		bool m_zeroBased;
 	public:
 		/** Constructor for direct initialization */
-		rdHistogram(rdHistogramBins bins);
+		rdHistogram(rdHistogramBins bins, bool zeroBased=false);
 		/** Constructor for initialization with an XML element */
 		rdHistogram(cXMLAttributeMap attributes);
 		/** Get a random value */
