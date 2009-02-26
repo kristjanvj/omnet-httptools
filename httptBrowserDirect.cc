@@ -60,6 +60,20 @@ void httptBrowserDirect::sendRequestToServer( BROWSE_EVENT_ENTRY be )
 	sendDirectToModule(be.serverModule,generatePageRequest(be.wwwhost,be.resourceName),0.0,rdProcessingDelay);		
 }
 
+void httptBrowserDirect::sendRequestToServer( httptRequestMessage *request )
+{
+	httptNodeBase *serverModule = dynamic_cast<httptNodeBase*>(controller->getServerModule(request->targetUrl()));
+	if ( serverModule == NULL )
+	{
+		EV_ERROR << "Failed to get server module for " << request->targetUrl() << endl;
+	}
+	else
+	{
+		EV_DEBUG << "Sending request to " << serverModule->getWWW() << endl;
+		sendDirectToModule(serverModule,request,0.0,rdProcessingDelay);
+	}
+}
+
 void httptBrowserDirect::sendRequestToRandomServer()
 {
 	httptNodeBase *serverModule = dynamic_cast<httptNodeBase*>(controller->getAnyServerModule());
