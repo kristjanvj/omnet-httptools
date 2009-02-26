@@ -52,7 +52,7 @@ std::string httptServerDirectEvilA::generateBody()
 	char tempBuf[128];
 	for( int i=0; i<numImages; i++ )
 	{		
-		rndDelay = 2.0+uniform(0,10);
+		rndDelay = 10.0+uniform(0,2.0);
 		sprintf(tempBuf, "IMG%.4d.jpg;%s;%f\n", i, "www.good.com", rndDelay);
 		result.append(tempBuf);
 	}

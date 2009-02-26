@@ -34,7 +34,8 @@
 //
 // Demonstrates subclassing the server to create a custom site. This site is an attacker -- a puppetmaster --
 // which serves HTML pages containing attack code. In this case, we are simulating JavaScript attack code which prompts
-// the unsuspecting browser to request a number of images from a wictim site.
+// the unsuspecting browser to request a number of images from a wictim site. Delays are specified to simulate hiding
+// the attack from the browser user by use of JavaScript timeouts or similar mechanisms.
 // The generateBody virtual function is redefined to create a page containing the attack code.
 //
 // This module definition has two additional parameters to the standard httptServerDirect definition:
