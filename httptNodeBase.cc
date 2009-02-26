@@ -42,31 +42,21 @@ const char* httptNodeBase::getWWW()
 	return wwwName.c_str();
 }
 
-void httptNodeBase::sendDirectToModule( httptNodeBase *receiver, MESSAGE_QUEUE_TYPE *queue, simtime_t baseDelay, rdObject *rd )
+void httptNodeBase::sendDirectToModule( httptNodeBase *receiver, cMessage *message, simtime_t constdelay, rdObject *rdDelay )
 {
-	while( queue->size() > 0 )
-	{
-		cMessage *sendmsg = queue->back();
-		queue->pop_back();
-		if ( sendmsg == NULL )
-		{
-			EV_ERROR << "No message to send to " << receiver->parentModule()->name() << endl;
-			continue;
-		}
-		sendDirectToModule( receiver, sendmsg, baseDelay, rd );
-	}
-}
-
-double httptNodeBase::sendDirectToModule( httptNodeBase *receiver, cMessage *message, simtime_t constdelay, rdObject *rd )
-{
-	if ( message==NULL ) return -1.0;
+	if ( message==NULL ) return;
 	simtime_t delay=constdelay+transmissionDelay(message);
-	if ( rd!=NULL ) delay+=rd->get();
+	if ( rdDelay!=NULL ) delay+=rdDelay->get();
 	EV_DEBUG << "Sending " << message->name() << " direct to " << receiver->parentModule()->name() << " with a delay of " << delay << " s\n";
 	sendDirect(message,delay,receiver,"tcpIn");
 	msgsSent++;
 	bytesSent+=message->byteLength();
-	return delay;
+}
+
+double httptNodeBase::transmissionDelay( cMessage *msg )
+{
+	if ( linkSpeed==0 ) return 0.0; // No delay if linkspeed unspecified
+	return msg->byteLength()/((double)linkSpeed/8);  // The linkspeed is in bits/s
 }
 
 void httptNodeBase::logRequest( const httptRequestMessage* httpRequest )
@@ -170,25 +160,7 @@ string httptNodeBase::formatHttpRequestLong( const httptRequestMessage* httpRequ
 	str << "SERIAL:" << httpRequest->serial() << "  " << endl;
 
 	str << "REQUEST:" << httpRequest->heading() << endl;
-/*	str << "REQUEST-TYPE:";
-	switch( httpRequest->messageType() )
-	{
-		case 0: str << "GET"; break;
-		case 1: str << "PUT"; break;
-		default: str << "UNKNOWN"; break;
-	}
-	str << "  ";  */
 
-/*	str << "SUB-TYPE:";
-	switch( httpRequest->requestSubType() )
-	{
-		case 0: str << "HTML DOC"; break;
-		case 1: str << "Text/HTML RES"; break;
-		case 2: str << "IMAGE RES"; break;
-		default: str << "UNKNOWN"; break;
-	} 
-	str << "  "; */
-	
 	return str.str();
 }
 
@@ -232,12 +204,6 @@ string httptNodeBase::formatHttpResponseLong( const httptReplyMessage* httpRespo
 	}
 
 	return str.str();
-}
-
-double httptNodeBase::transmissionDelay( cMessage *msg )
-{
-	if ( linkSpeed==0 ) return 0.0; // No delay if linkspeed unspecified
-	return msg->byteLength()/((double)linkSpeed/8);  // The linkspeed is in bits/s
 }
 
 
