@@ -118,6 +118,9 @@ class INET_API httptServerBase : public httptNodeBase
 	//@}
 
 	protected:
+		void updateDisplay(); //> Update the display string if running in GUI mode
+
+	protected:
 		/** Generate a HTML document in response to a request. */
 		httptReplyMessage* generateDocument( httptRequestMessage *request, const char* resource, int size=0 );
 		/** Generate a resource message in response to a request. */
