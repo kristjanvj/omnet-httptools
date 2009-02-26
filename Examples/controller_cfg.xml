@@ -7,7 +7,4 @@
 	<controller-profile id="uniform">
 		<serverPopularityDistribution type='uniform' beginning="0" end="" />    
 	</controller-profile>
-	<controller-profile id="histogram">
-		<serverPopularityDistribution type='histogram' bins="[(10,25);(10,50);(10,10);(10,5)]" />    
-	</controller-profile>
 </root>
