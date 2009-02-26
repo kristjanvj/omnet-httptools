@@ -65,8 +65,16 @@ class INET_API httptBrowserDirect : public httptBrowserBase
 	/** @name Implementation of methods for sending requests to a server. See parent class for details. */
 	//@{
 	protected:
+		/** @brief Sends a scripted browse event to a specific server */
 		virtual void sendRequestToServer( BROWSE_EVENT_ENTRY be );
+
+		/** Send a request to server. Uses the recipient stamped in the request. */
+		virtual void sendRequestToServer( httptRequestMessage *request );
+
+		/** @brief Sends a generic request to a randomly chosen server */
 		virtual void sendRequestToRandomServer();
+
+		/** @brief Sends a number of queued messages to the specified server */
 		virtual void sendRequestsToServer( string www, MESSAGE_QUEUE_TYPE queue );
 	//@}
 };
