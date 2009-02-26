@@ -87,6 +87,7 @@ void httptServer::handleMessage(cMessage *msg)
 		EV_DEBUG << "Process the message " << msg->name() << endl;
 		socket->processMessage(msg);
 	}
+	httptServerBase::handleMessage(msg);
 }
 
 void httptServer::socketEstablished(int connId, void *yourPtr)
