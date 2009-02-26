@@ -1,6 +1,0 @@
-
-#
-# Very simple browse script. Accesses a single top page of www.single.org
-#
-3600;www.single.org
-
