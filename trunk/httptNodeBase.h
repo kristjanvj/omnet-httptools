@@ -45,8 +45,10 @@
 #include "httptUtils.h"
 #include "httptLogdefs.h"
 
-#define HTTPT_REQUEST_MESSAGE  10000
-#define HTTPT_RESPONSE_MESSAGE 10001
+#define HTTPT_REQUEST_MESSAGE  			10000
+#define HTTPT_DELAYED_REQUEST_MESSAGE	10001
+#define HTTPT_RESPONSE_MESSAGE 			10010
+#define HTTPT_DELAYED_RESPONSE_MESSAGE	10011
 
 using namespace std;
 
@@ -106,18 +108,27 @@ class httptNodeBase : public cSimpleModule
 		const char* getWWW();
 
 	protected:
-		/** Send a number of messages direct to the specified module. Messages must be generated and enqueued beforehand. */
-		void sendDirectToModule( httptNodeBase *receiver, MESSAGE_QUEUE_TYPE *queue, simtime_t baseDelay=0.0, rdObject *rd=NULL );
-		/** Send a single message direct to the specified module. */
-		double sendDirectToModule( httptNodeBase *receiver, cMessage *message, simtime_t constdelay=0.0, rdObject *rd=NULL );
+		/** @name Direct message passing utilities */
+		//@{
+		/** 
+		 * @brief Send a single message direct to the specified module. 
+		 * Transmission delay is automatically calculated from the size of the message. In addition, a constant delay
+		 * a random delay object may be specified. Those delays add to the total used to submit the message to the
+		 * OMNeT++ direct message passing mechanism.
+		 */
+		void sendDirectToModule( httptNodeBase *receiver, cMessage *message, simtime_t constdelay=0.0, rdObject *rd=NULL );
+		/** Calculate the transmission delay for the message msg */
+		double transmissionDelay( cMessage *msg );
+		//@}
 
+		/** @name Methods for logging and formatting messages */
+		//@{
 		/** Log a request message to file and optionally display in console */
 		void logRequest( const httptRequestMessage* httpRequest );
 		/** Log a response message to file and optionally display in console */
 		void logResponse( const httptReplyMessage* httpResponse );
 		/** Used by logRequest and logResponse to write the formatted message to file */
 		void logEntry( string line );
-
 		/** Format a request message in compact semicolon-delimited format */
 		string formatHttpRequestShort( const httptRequestMessage* httpRequest );
 		/** Format a response message in compact semicolon-delimited format */
@@ -126,9 +137,7 @@ class httptNodeBase : public cSimpleModule
 		string formatHttpRequestLong( const httptRequestMessage* httpRequest );
 		/** Format a response message in a more human-readable format */
 		string formatHttpResponseLong( const httptReplyMessage* httpResponse );
-
-		/** Calculate the transmission delay for the message msg */
-		double transmissionDelay( cMessage *msg );
+		//@}
 };
 
 #endif /* __httptNodeBase_H_ */
