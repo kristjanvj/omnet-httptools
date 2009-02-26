@@ -100,6 +100,9 @@ class INET_API httptBrowser : public httptBrowserBase, public TCPSocket::Callbac
 		/** @brief Sends a scripted browse event to a specific server */
 		virtual void sendRequestToServer( BROWSE_EVENT_ENTRY be );
 
+		/** Send a request to server. Uses the recipient stamped in the request. */
+		virtual void sendRequestToServer( httptRequestMessage *request );
+
 		/** @brief Sends a generic request to a randomly chosen server */
 		virtual void sendRequestToRandomServer();
 

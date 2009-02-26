@@ -96,6 +96,21 @@ void httptBrowser::sendRequestToServer( BROWSE_EVENT_ENTRY be )
 	submitToSocket(szModuleName,connectPort,generatePageRequest(be.wwwhost,be.resourceName));
 }
 
+void httptBrowser::sendRequestToServer( httptRequestMessage *request )
+{
+	int connectPort;
+	char szModuleName[127];
+
+	if ( controller->getServerInfo(request->targetUrl(),szModuleName,connectPort) != 0 )
+	{
+		EV_ERROR << "Unable to get server info for URL " << request->targetUrl() << endl;
+		return;
+	}
+
+	EV_DEBUG << "Sending request to server " << request->targetUrl() << " (" << szModuleName << ") on port " << connectPort << endl;
+	submitToSocket(szModuleName,connectPort,request);
+}
+
 void httptBrowser::sendRequestToRandomServer()
 {
 	int connectPort;
