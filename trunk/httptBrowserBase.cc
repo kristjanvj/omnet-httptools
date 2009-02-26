@@ -179,52 +179,86 @@ void httptBrowserBase::handleSelfMessages(cMessage *msg)
     switch (msg->kind())
     {
 		case MSGKIND_ACTIVITY_START:
-			eventTimer->setKind(MSGKIND_START_SESSION);
-			messagesInCurrentSession = 0;
-			reqNoInCurSession = 0;
-			activityPeriodLength = rdActivityLength->get(); // Get the length of the activity period
-			acitivityPeriodEnd = simTime()+activityPeriodLength; // The end of the activity period
-			EV_INFO << "Activity period starts @ T=" << simTime() << ". Activity period is " << activityPeriodLength/3600 << " hours." << endl;
-			scheduleAt(simTime() + (simtime_t)rdInterSessionInterval->get()/2, eventTimer);
+			handleSelfActivityStart();
 			break;
 		case MSGKIND_START_SESSION:
-			sessionCount++;
-			messagesInCurrentSession = 0;
-			reqInCurSession = 0;
-			reqNoInCurSession = (int)rdReqInSession->get();
-			EV_INFO << "Starting session # " << sessionCount << " @ T=" << simTime() << ". Requests in session are " << reqNoInCurSession << "\n";
-			sendRequestToRandomServer();
-			scheduleNextBrowseEvent();						
+			handleSelfStartSession();
 			break;
 		case MSGKIND_NEXT_MESSAGE:
-			EV_INFO << "Next message in session # " << sessionCount << " @ T=" << simTime() << ". "
- 					<< "Current request is " << reqInCurSession << "/" << reqNoInCurSession << "\n";
-			sendRequestToRandomServer();
-			scheduleNextBrowseEvent();
+			handleSelfNextMessage();
 			break;
 		case MSGKIND_SCRIPT_EVENT:
-			EV_INFO << "Scripted event @ T=" << simTime() << "\n";
-			sessionCount++;
-			messagesInCurrentSession = 0;
-			// Get the browse event
-			if ( browseEvents.size() == 0 ) error("No event entry in queue");
-			BROWSE_EVENT_ENTRY be = browseEvents.back();
-			browseEvents.pop_back();				
-			sendRequestToServer(be);
-			// Schedule the next event
-			if ( browseEvents.size() != 0 )
-			{
-				be = browseEvents.back();
-				EV_DEBUG << "Scheduling next event @ " << be.time << "\n";
-				eventTimer->setKind(MSGKIND_SCRIPT_EVENT);
-				scheduleAt(be.time, eventTimer);
-			}
-			else
-			{
-				EV_DEBUG << "No more browsing events\n";
-			}
+			handleSelfScriptedEvent();
+			break;
+		case HTTPT_DELAYED_REQUEST_MESSAGE:
+			handleSelfDelayedRequestMessage(msg);
 			break;
 	}
+}
+
+void httptBrowserBase::handleSelfActivityStart()
+{
+	EV_DEBUG << "Starting new activity period @ T=" << simTime() << endl;
+	eventTimer->setKind(MSGKIND_START_SESSION);
+	messagesInCurrentSession = 0;
+	reqNoInCurSession = 0;
+	activityPeriodLength = rdActivityLength->get(); // Get the length of the activity period
+	acitivityPeriodEnd = simTime()+activityPeriodLength; // The end of the activity period
+	EV_INFO << "Activity period starts @ T=" << simTime() << ". Activity period is " << activityPeriodLength/3600 << " hours." << endl;
+	scheduleAt(simTime() + (simtime_t)rdInterSessionInterval->get()/2, eventTimer);
+}
+
+void httptBrowserBase::handleSelfStartSession()
+{
+	EV_DEBUG << "Starting new session @ T=" << simTime() << endl;
+	sessionCount++;
+	messagesInCurrentSession = 0;
+	reqInCurSession = 0;
+	reqNoInCurSession = (int)rdReqInSession->get();
+	EV_INFO << "Starting session # " << sessionCount << " @ T=" << simTime() << ". Requests in session are " << reqNoInCurSession << "\n";
+	sendRequestToRandomServer();
+	scheduleNextBrowseEvent();						
+}
+
+void httptBrowserBase::handleSelfNextMessage()
+{
+	EV_DEBUG << "New browse event triggered @ T=" << simTime() << endl;
+	EV_INFO << "Next message in session # " << sessionCount << " @ T=" << simTime() << ". "
+			<< "Current request is " << reqInCurSession << "/" << reqNoInCurSession << "\n";
+	sendRequestToRandomServer();
+	scheduleNextBrowseEvent();
+}
+
+void httptBrowserBase::handleSelfScriptedEvent()
+{
+	EV_DEBUG << "Scripted browse event @ T=" << simTime() << "\n";
+	sessionCount++;
+	messagesInCurrentSession = 0;
+	// Get the browse event
+	if ( browseEvents.size() == 0 ) error("No event entry in queue");
+	BROWSE_EVENT_ENTRY be = browseEvents.back();
+	browseEvents.pop_back();				
+	sendRequestToServer(be);
+	// Schedule the next event
+	if ( browseEvents.size() != 0 )
+	{
+		be = browseEvents.back();
+		EV_DEBUG << "Scheduling next event @ " << be.time << "\n";
+		eventTimer->setKind(MSGKIND_SCRIPT_EVENT);
+		scheduleAt(be.time, eventTimer);
+	}
+	else
+	{
+		EV_DEBUG << "No more browsing events\n";
+	}
+}
+
+void httptBrowserBase::handleSelfDelayedRequestMessage(cMessage *msg)
+{
+	EV_DEBUG << "Sending delayed message " << msg->name() << " @ T=" << simTime() << endl;
+	httptRequestMessage *reqmsg = dynamic_cast<httptRequestMessage*>(msg);
+	reqmsg->setKind(HTTPT_REQUEST_MESSAGE);
+	sendRequestToServer(reqmsg);
 }
 
 void httptBrowserBase::handleDataMessage( cMessage *msg )
@@ -316,14 +350,24 @@ void httptBrowserBase::handleDataMessage( cMessage *msg )
 				if ( fields.size()>4 )
 					refSize = safeatoi(fields[4].c_str());
 
-				EV_DEBUG << "Requesting resource " << resourceName << endl;
+				EV_DEBUG << "Generating resource request: " << resourceName << ". Provider: " << providerName 
+						 << ", delay: " << delay << ", bad: " << bad << ", ref.size: " << refSize <<endl;
 
 				// Generate a request message and push on queue for the intended recipient
 				cMessage *reqmsg = generateResourceRequest(providerName,resourceName,serial++,bad,refSize); // TODO: CHECK HERE FOR XSITE
-				requestQueues[providerName].push_front(reqmsg);
+				if ( delay==0.0 )
+				{
+					requestQueues[providerName].push_front(reqmsg);
+				}
+				else
+				{
+					reqmsg->setKind(HTTPT_DELAYED_REQUEST_MESSAGE);
+					scheduleAt(simTime()+delay,reqmsg);				// Schedule the message as a self message
+				}
 			}
 			// Iterate through the list of queues (one for each recipient encountered) and submit each queue.
 			// A single socket will thus be opened for each recipient for a rough HTTP/1.1 emulation.
+			// This is only done for messages which are not delayed in the simulated page.
 			std::map<string,MESSAGE_QUEUE_TYPE>::iterator i=requestQueues.begin();
 			for( ; i!=requestQueues.end(); i++ )
 				sendRequestsToServer((*i).first,(*i).second);

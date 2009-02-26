@@ -35,10 +35,10 @@
 #include <cstrtokenizer.h>
 #include "httptNodeBase.h"
 
-#define MSGKIND_START_SESSION 	0
-#define MSGKIND_NEXT_MESSAGE  	1
-#define MSGKIND_SCRIPT_EVENT  	2
-#define MSGKIND_ACTIVITY_START  3
+#define MSGKIND_START_SESSION 	 0
+#define MSGKIND_NEXT_MESSAGE  	 1
+#define MSGKIND_SCRIPT_EVENT  	 2
+#define MSGKIND_ACTIVITY_START   3
 
 #define MAX_URL_LENGTH 2048 // The maximum allowed URL string length.
 
@@ -155,6 +155,15 @@ class INET_API httptBrowserBase : public httptNodeBase
 		/** Handle a self message -- events and such */
 		void handleSelfMessages( cMessage *msg );
 
+		/** @name Handlers for self messages */
+		//@{
+		void handleSelfActivityStart();							//> Handle start of activity period trigger
+		void handleSelfStartSession();							//> Handle start of session trigger
+		void handleSelfNextMessage();							//> Handle browse event trigger
+		void handleSelfScriptedEvent();							//> Handle a scheduled scripted event
+		void handleSelfDelayedRequestMessage(cMessage *msg);	//> Handle a delayed message event
+		//@}
+
 		/** Schedule the next browse event. Handles the activity, session and inter-request times */
 		void scheduleNextBrowseEvent();
 
@@ -162,6 +171,8 @@ class INET_API httptBrowserBase : public httptNodeBase
 		//@{
 		/** Send a request defined by a browse event (scripted entry) to a server */
 		virtual void sendRequestToServer( BROWSE_EVENT_ENTRY be )=0;
+		/** Send a request to server. Uses the recipient stamped in the request. */
+		virtual void sendRequestToServer( httptRequestMessage *request )=0;
 		/** Send a request to a randomly selected server. The derived class utilizes the controller object to retrieve the object */
 		virtual void sendRequestToRandomServer()=0;
 		/** Send a request to a named server */
