@@ -466,6 +466,9 @@ void httptController::parseOptionsFile(string file, string section)
 		{
 			if ( bSectionFound )
 			{
+				// Format: {time};{www name};{event kind};{p value};{amortization factor}
+				// Event kind is not used at the present
+
 				cStringTokenizer tokenizer = cStringTokenizer(line.c_str(),";");
 				std::vector<string> res = tokenizer.asVector();
 				if ( res.size()!=5 ) 
@@ -484,7 +487,7 @@ void httptController::parseOptionsFile(string file, string section)
 				EV_DEBUG << "Scheduling a status change for " << res[1] << " @ T=" << activationtime << ". Parameters: " << line << endl;
 				statusChange = new httptServerStatusUpdateMsg();
 				statusChange->setWww(res[1].c_str());
-				statusChange->setEventKind(1); // TODO: See if this parameter is really needed
+				statusChange->setEventKind(1);
 				statusChange->setPvalue(pval);
 				statusChange->setPamortize(amortizeval);
 				scheduleAt(activationtime,statusChange);
@@ -513,6 +516,7 @@ WEB_SERVER_ENTRY* httptController::__getRandomServerInfo()
 			// Pick from the probability distribution which applies to the general population.
 			selected = (int)rdServerSelection->get();
 			en = pickList[selected];
+			if ( en == NULL ) error("Invalid node selected at index %d", selected);
 			EV_DEBUG << "Selecting from normal list. Got node " << en->name << endl;
 		}
 		EV_DEBUG << "Activation time of the node is " << en->activationTime << " and the current time is " << simTime() << endl;

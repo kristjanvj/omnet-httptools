@@ -184,7 +184,11 @@ class httptController : public cSimpleModule
 		/** @brief list the registered servers in the order of the general population pick list. Useful for debug. */
 		string listPickOrder();
 
-		/** @brief Parse a popularity modification events definition file at startup (if defined) */
+		/** 
+		 * @brief Parse a popularity modification events definition file at startup (if defined) 
+	 	 * Format: {time};{www name};{event kind};{p value};{amortization factor}
+		 * Event kind is not used at the present -- use 1 as a default here.
+		*/
 		void parseOptionsFile(string file, string section);
 
 	private:
