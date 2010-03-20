@@ -35,6 +35,8 @@
 // 
 // Event messages for the HttpTools components
 //
+// NEW: The definition has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
 // @version 1.0 
 // @author  Kristjan V. Jonsson
 //
@@ -47,19 +49,19 @@
 //
 // Used by the controller to trigger popularity modifications for web sites.
 //
-// @version 0.9 
+// NEW: The definition has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
+// @version 1.0 
 // @author  Kristjan V. Jonsson
 //
-message httptServerStatusUpdateMsg
+packet httptServerStatusUpdateMsg
 {
-	properties:
-		omitGetVerb = true;
-	fields:
-		string www;				// Name of the WWW site.
-		simtime_t setTime;		// The event set time.
-		int eventKind;			// The event kind, e.g. ss_special.
-		double pvalue;			// The initial elevated probability.
-		double pamortize;		// The amortization factor -- i.e. how much the pvalue is decreased on each hit.
+    @omitGetVerb(true);
+    string www;				// Name of the WWW site.
+    simtime_t setTime;		// The event set time.
+    int eventKind;			// The event kind, e.g. ss_special.
+    double pvalue;			// The initial elevated probability.
+    double pamortize;		// The amortization factor -- i.e. how much the pvalue is decreased on each hit.
 }
 
 
