@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -35,6 +35,8 @@ Define_Module(httptServer);
 void httptServer::initialize()
 {
 	httptServerBase::initialize();
+
+	EV_DEBUG << "Initializing server component (sockets version)" << endl;
 
     int port = par("port");
 
@@ -73,7 +75,7 @@ void httptServer::handleMessage(cMessage *msg)
 	}
 	else
 	{
-		EV_DEBUG << "Handle inbound message " << msg->name() << " of kind " << msg->kind() << endl;
+		EV_DEBUG << "Handle inbound message " << msg->getName() << " of kind " << msg->getKind() << endl;
 		TCPSocket *socket = sockCollection.findSocketFor(msg);
 		if (!socket)
 		{
@@ -84,7 +86,7 @@ void httptServer::handleMessage(cMessage *msg)
 			socket->setCallbackObject(this,socket);
 			sockCollection.addSocket(socket);
 		}
-		EV_DEBUG << "Process the message " << msg->name() << endl;
+		EV_DEBUG << "Process the message " << msg->getName() << endl;
 		socket->processMessage(msg);
 	}
 	httptServerBase::handleMessage(msg);
@@ -96,7 +98,7 @@ void httptServer::socketEstablished(int connId, void *yourPtr)
 	socketsOpened++;
 }
 
-void httptServer::socketDataArrived(int connId, void *yourPtr, cMessage *msg, bool urgent)
+void httptServer::socketDataArrived(int connId, void *yourPtr, cPacket *msg, bool urgent)
 {
 	if ( yourPtr==NULL )
 	{
@@ -106,15 +108,14 @@ void httptServer::socketDataArrived(int connId, void *yourPtr, cMessage *msg, bo
 	TCPSocket *socket = (TCPSocket*)yourPtr;
 
 	// Should be a httptReplyMessage
-	EV_DEBUG << "Socket data arrived on connection " << connId << ". Message=" << msg->name() << ", kind=" << msg->kind() << endl;
+	EV_DEBUG << "Socket data arrived on connection " << connId << ". Message=" << msg->getName() << ", kind=" << msg->getKind() << endl;
 
 	// call the message handler to process the message.
 	cMessage *reply = handleReceivedMessage(msg);
+	cPacket *pckt = check_and_cast<cPacket *>(msg);
 	if ( reply!=NULL )
 	{
 		socket->send(reply); // Send to socket if the reply is non-zero.
-		msgsSent++;
-		bytesSent+=msg->byteLength();
 	}
 	delete msg; // Delete the received message here. Must not be deleted in the handler!
 }
@@ -127,9 +128,9 @@ void httptServer::socketPeerClosed(int connId, void *yourPtr)
 		return;
 	}
 	TCPSocket *socket = (TCPSocket*)yourPtr;
-	
+
     // close the connection (if not already closed)
-    if (socket->state()==TCPSocket::PEER_CLOSED)
+    if (socket->getState()==TCPSocket::PEER_CLOSED)
     {
         EV_INFO << "remote TCP closed, closing here as well. Connection id is " << connId << endl;
         socket->close();  // Call the close method to properly dispose of the socket.
