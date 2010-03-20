@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -44,23 +44,23 @@ const char* httptNodeBase::getWWW()
 
 void httptNodeBase::sendDirectToModule( httptNodeBase *receiver, cMessage *message, simtime_t constdelay, rdObject *rdDelay )
 {
+	cPacket *pckt = check_and_cast<cPacket *>(message);  // MIGRATE40: kvj
 	if ( message==NULL ) return;
 	simtime_t delay=constdelay+transmissionDelay(message);
 	if ( rdDelay!=NULL ) delay+=rdDelay->get();
-	EV_DEBUG << "Sending " << message->name() << " direct to " << receiver->parentModule()->name() << " with a delay of " << delay << " s\n";
-	sendDirect(message,delay,receiver,"tcpIn");
-	msgsSent++;
-	bytesSent+=message->byteLength();
+	EV_DEBUG << "Sending " << message->getName() << " direct to " << receiver->getParentModule()->getName() << " with a delay of " << delay << " s\n";
+	sendDirect(message,receiver,"tcpIn");
 }
 
 double httptNodeBase::transmissionDelay( cMessage *msg )
 {
+	cPacket *pckt = check_and_cast<cPacket *>(msg);
 	if ( linkSpeed==0 ) return 0.0; // No delay if linkspeed unspecified
-	return msg->byteLength()/((double)linkSpeed/8);  // The linkspeed is in bits/s
+	return pckt->getByteLength()/((double)linkSpeed/8);  // The linkspeed is in bits/s
 }
 
 void httptNodeBase::logRequest( const httptRequestMessage* httpRequest )
-{	
+{
 	if (!enableLogging) return;
 	if ( outputFormat == lf_short )
 		logEntry(formatHttpRequestShort(httpRequest));
@@ -92,10 +92,10 @@ void httptNodeBase::logEntry( string line )
 
 	bool exists = fileExists(logFileName.c_str()); // Check if the file exists. If not, add the field names at top.
 
-	outfile.open(logFileName.c_str(),ios::app); 
+	outfile.open(logFileName.c_str(),ios::app);
 	if ( !exists )
 		outfile << "time;simtime;logging-node;sending-node;type;originator-url;target-url;protocol;keep-alive;serial;heading;bad-req;result-code;content-type" << endl;
-	outfile << curtime << ";" << simTime() << ";" << parentModule()->name();
+	outfile << curtime << ";" << simTime() << ";" << getParentModule()->getName();
 	if( outputFormat == lf_short )
 		outfile << ";";
 	else
@@ -105,19 +105,19 @@ void httptNodeBase::logEntry( string line )
 }
 
 string httptNodeBase::formatHttpRequestShort( const httptRequestMessage* httpRequest )
-{	
+{
 	ostringstream str;
 
 	string originatorStr = "";
-	cModule *originator = httpRequest->senderModule();
-	if ( originator!=NULL && originator->parentModule()!=NULL )
-		originatorStr = originator->parentModule()->name();
+	cModule *originator = httpRequest->getSenderModule();
+	if ( originator!=NULL && originator->getParentModule()!=NULL )
+		originatorStr = originator->getParentModule()->getFullName();
 
 	str << originatorStr << ";";
 	str << "REQ;" << httpRequest->originatorUrl() << ";" << httpRequest->targetUrl() << ";";
 	str << httpRequest->protocol() << ";" << httpRequest->keepAlive() << ";" << httpRequest->serial() << ";";
 	str << httpRequest->heading() << ";" << httpRequest->badRequest() << ";;"; // Skip the response specific fields
-	
+
 	return str.str();
 }
 
@@ -126,9 +126,9 @@ string httptNodeBase::formatHttpResponseShort( const httptReplyMessage* httpResp
 	ostringstream str;
 
 	string originatorStr = "";
-	cModule *originator = httpResponse->senderModule();
-	if ( originator!=NULL && originator->parentModule()!=NULL )
-		originatorStr = originator->parentModule()->name();
+	cModule *originator = httpResponse->getSenderModule();
+	if ( originator!=NULL && originator->getParentModule()!=NULL )
+		originatorStr = originator->getParentModule()->getFullName();
 
 	str << originatorStr << ";";
 	str << "RESP;" << httpResponse->originatorUrl() << ";" << httpResponse->targetUrl() << ";";
@@ -140,14 +140,14 @@ string httptNodeBase::formatHttpResponseShort( const httptReplyMessage* httpResp
 }
 
 string httptNodeBase::formatHttpRequestLong( const httptRequestMessage* httpRequest )
-{	
+{
 	ostringstream str;
 
-	str << "REQUEST: " << httpRequest->name() << " -- " << httpRequest->byteLength() << " bytes\n";
+	str << "REQUEST: " << httpRequest->getName() << " -- " << httpRequest->getByteLength() << " bytes\n";
 	str << "Target URL:" << httpRequest->targetUrl() << "  Originator URL:" << httpRequest->originatorUrl() << endl;
 
-	str << "PROTOCOL:"; 
-	switch( httpRequest->protocol() )
+	str << "PROTOCOL:";
+	switch( httpRequest->protocol() )  // MIGRATE40: kvj
 	{
 		case 10: str << "HTTP/1.0"; break;
 		case 11: str << "HTTP/1.1"; break;
@@ -168,11 +168,11 @@ string httptNodeBase::formatHttpResponseLong( const httptReplyMessage* httpRespo
 {
 	ostringstream str;
 
-	str << "RESPONSE: " << httpResponse->name() << " -- " << httpResponse->byteLength() << " bytes\n";
+	str << "RESPONSE: " << httpResponse->getName() << " -- " << httpResponse->getByteLength() << " bytes\n";
 
 	str << "Target URL:" << httpResponse->targetUrl() << "  Originator URL:" << httpResponse->originatorUrl() << endl;
 
-	str << "PROTOCOL:"; 
+	str << "PROTOCOL:";
 	switch( httpResponse->protocol() )
 	{
 		case 10: str << "HTTP/1.0"; break;
@@ -194,12 +194,12 @@ string httptNodeBase::formatHttpResponseLong( const httptReplyMessage* httpRespo
 		case rt_text: str << "Text/HTML RES"; break;
 		case rt_image: str << "IMG RES"; break;
 		default: str << "UNKNOWN"; break;
-	} 
+	}
 	str << endl;
 
 	if ( m_bDisplayResponseContent )
 	{
-		str << "CONTENT:" << endl;	
+		str << "CONTENT:" << endl;
 		str << httpResponse->payload() << endl;
 	}
 
