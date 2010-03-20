@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -48,7 +48,7 @@ rdNormal::rdNormal(double mean, double sd, bool nonNegative)
 	m_mean = mean;
 	m_sd = sd;
 	m_nonNegative = nonNegative;
-	m_min = 0.0;	
+	m_min = 0.0;
 	m_bMinLimit = false;
 }
 
@@ -62,7 +62,7 @@ rdNormal::rdNormal( cXMLAttributeMap attributes )
 	m_mean = atof(attributes["mean"].c_str());
 	m_sd = atof(attributes["sd"].c_str());
 	m_bMinLimit = _hasKey(attributes,"min");
-	if ( m_bMinLimit )  
+	if ( m_bMinLimit )
 		m_min = atof(attributes["min"].c_str());
 	if ( _hasKey(attributes,"nonNegative") )
 		m_nonNegative = strcmp(attributes["nonNegative"].c_str(),"true")==0;
@@ -72,7 +72,7 @@ rdNormal::rdNormal( cXMLAttributeMap attributes )
 
 double rdNormal::get()
 {
-	double retval=0.0;	
+	double retval=0.0;
 	do
 	{
 		if ( m_nonNegative )
@@ -80,7 +80,7 @@ double rdNormal::get()
 		else
 			retval = normal(m_mean,m_sd);
 	}
-	while(m_bMinLimit && retval<m_min);	
+	while(m_bMinLimit && retval<m_min);
 
 	return retval;
 }
@@ -99,7 +99,7 @@ rdUniform::rdUniform( cXMLAttributeMap attributes )
 		throw "Undefined parameter for random distribution. Beginning must be defined for a normal distribution";
 	if ( !_hasKey(attributes,"end") )
 		throw "Undefined parameter for random distribution. End must be defined for a normal distribution";
-	m_beginning = atof(attributes["beginning"].c_str());	
+	m_beginning = atof(attributes["beginning"].c_str());
 	m_end = atof(attributes["end"].c_str());
 }
 
@@ -125,7 +125,7 @@ rdExponential::rdExponential( cXMLAttributeMap attributes )
 	if ( !_hasKey(attributes,"mean") )
 		throw "Undefined parameter for random distribution. Mean must be defined for an exponential distribution";
 	m_mean = atof(attributes["mean"].c_str());
-	
+
 	m_min=0.0;
 	m_max=0.0;
 	m_bMinLimit = _hasKey(attributes,"min");
@@ -167,10 +167,10 @@ rdHistogram::rdHistogram( cXMLAttributeMap attributes )
 double rdHistogram::get()
 {
 	int i;
-	int count = m_bins.size(); 
-	rdHistogramBin bin;	
+	int count = m_bins.size();
+	rdHistogramBin bin;
 	double val = uniform(0,1);
-	double cumsum = 0;	
+	double cumsum = 0;
 	int cumcount = 0;
 	for( i=0; i<count; i++ )
 	{
@@ -221,7 +221,7 @@ void rdHistogram::__parseBinString( string binstr )
 
 void rdHistogram::__normalizeBins()
 {
-	int i;
+	unsigned int i;
 	double sum=0;
 	for( i=0; i<m_bins.size(); i++ )
 		sum += m_bins[i].sum;
@@ -271,11 +271,11 @@ rdZipf::rdZipf(cXMLAttributeMap attributes)
 	}
 	catch(...)
 	{
-		n=1; 
+		n=1;
 	}
 
 	try
-	{	
+	{
 		alpha = atof(attributes["alpha"].c_str());
 	}
 	catch(...)
@@ -287,7 +287,7 @@ rdZipf::rdZipf(cXMLAttributeMap attributes)
 }
 
 rdZipf::rdZipf(int n,double alpha, bool baseZero)
-{	
+{
 	m_type=dt_zipf;
 	__initialize(n,alpha,baseZero);
 }
@@ -302,7 +302,7 @@ double rdZipf::get()
 	{
 		sum_prob += m_c / pow((double) i, m_alpha);
 		if (sum_prob >= z) break;
-	}	
+	}
 	if ( m_baseZero ) return i-1;
 	else return i;
 }
@@ -313,8 +313,8 @@ string rdZipf::toString()
 	str << "Zipf probability distribution. n=" << m_number << ", alpha=" << m_alpha;
 	if (m_baseZero)
 		str << " Zero-based";
-	str << endl;	
-	return str.str();	
+	str << endl;
+	return str.str();
 }
 
 void rdZipf::__initialize(int n,double alpha, bool baseZero)
