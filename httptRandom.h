@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -27,7 +27,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // ***************************************************************************
- 
+
 #ifndef __httptRandom_H_
 #define __httptRandom_H_
 
@@ -53,12 +53,14 @@ using namespace std;
  */
 class rdObject
 {
+	public:
+		virtual ~rdObject(){}
 	protected:
 		DISTR_TYPE m_type;
 	public:
 		virtual double get()=0; //> Pure virtual get a random number. Must be implemented in derived classes.
 	public:
-		DISTR_TYPE type() {return m_type;}
+		DISTR_TYPE getType() {return m_type;}
 		string typeStr();
 		virtual string toString() {return typeStr();}
 	protected:
@@ -81,7 +83,7 @@ class rdNormal : public rdObject
 		/** Constructor for direct initialization */
 		rdNormal(double mean, double sd, bool nonNegative=false);
 		/** Constructor for initialization with an XML element */
-		rdNormal(cXMLAttributeMap attributes);	
+		rdNormal(cXMLAttributeMap attributes);
 		/** Set the min limit for the random values */
 		void setMinLimit(double min) {m_min=min; m_bMinLimit=true;}
 		/** Cancel the min limit when not needed any more */
@@ -225,9 +227,9 @@ class rdZipf : public rdObject
  */
 class rdObjectFactory
 {
-	public: 
+	public:
 		/** Return a rdObject-derived class based on the type name in the XML element */
-		rdObject* create( cXMLAttributeMap attributes );	
+		rdObject* create( cXMLAttributeMap attributes );
 };
 
 #endif /* __httptRandom_H_ */
