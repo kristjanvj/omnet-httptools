@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -27,12 +27,12 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // ***************************************************************************
- 
+
 
 #ifndef __httptBrowserBase_H_
 #define __httptBrowserBase_H_
 
-#include <cstrtokenizer.h>
+#include <omnetpp.h>
 #include "httptNodeBase.h"
 
 #define MSGKIND_START_SESSION 	 0
@@ -44,7 +44,7 @@
 
 using namespace std;
 
-/** 
+/**
  * @brief Browse event item. Used in scripted mode.
  */
 struct BROWSE_EVENT_ENTRY
@@ -55,8 +55,8 @@ struct BROWSE_EVENT_ENTRY
 	httptNodeBase *serverModule;	//> Reference to the omnet server object. Resolved at parse time.
 };
 
-/** 
- * @brief Browse events queue. Used in scripted mode. 
+/**
+ * @brief Browse events queue. Used in scripted mode.
  */
 typedef deque<BROWSE_EVENT_ENTRY> BROWSE_EVENT_QUEUE_TYPE;
 
@@ -65,13 +65,13 @@ typedef deque<BROWSE_EVENT_ENTRY> BROWSE_EVENT_QUEUE_TYPE;
  *
  * A simulated browser module for OMNeT++ simulations. A part of HttpTools.
  *
- * The component is designed to plug into the existing INET StandardHost module as a 
+ * The component is designed to plug into the existing INET StandardHost module as a
  * tcpApp. See the INET documentation and examples for details. It can also be used
  * with the simplified DirectHost, which only supports direct message passing.
  *
  * The browser can operate in two modes:
  * - Random request mode: The browser uses the parameters supplied and statistical distributions
- *   to make requests. 
+ *   to make requests.
  * - Scripted mode: The browser operates using a script file -- requests are issued to specific
  *   URLs and at specific times.
  *
@@ -80,15 +80,15 @@ typedef deque<BROWSE_EVENT_ENTRY> BROWSE_EVENT_QUEUE_TYPE;
  *   variables from the simulation and simplifies setup considerably. This mode should be used
  *   whenever the topology of the network and the resulting effects are not of interest. This is
  *   implemented in the derived httptBrowserDirect class.
- * - Socket mode, in which the INET TCPSocket is used to handle messages sent and received. 
+ * - Socket mode, in which the INET TCPSocket is used to handle messages sent and received.
  *   This mode uses the full INET TCP/IP simulation. Requires the network topology to be set
  *   up -- routers, links, etc. This is implemented in the derived httptBrowser class.
  *
  * @see httptBrowser
  * @see httptBrowserDirect
- * 
+ *
  * @author Kristjan V. Jonsson (kristjanvj@gmail.com)
- * @version 0.9
+ * @version 1.0
  */
 class INET_API httptBrowserBase : public httptNodeBase
 {
@@ -116,7 +116,7 @@ class INET_API httptBrowserBase : public httptNodeBase
 		rdObject *rdRequestSize;
 		rdObject *rdReqInSession;
 		//@}
-		
+
 		/** @name statistics variables */
 		//@{
 		long htmlRequested;
@@ -139,13 +139,17 @@ class INET_API httptBrowserBase : public httptNodeBase
 	//@{
 	protected:
 		/** Initialization of the component and startup of browse event scheduling */
-		virtual void initialize();
+		virtual void initialize(int stage);
 
 		/** Report final statistics */
 		virtual void finish();
 
 		/** Handle incoming messages */
 		virtual void handleMessage(cMessage *msg)=0;
+
+		/** @brief Returns the number of initialization stages. Two required. */
+		int numInitStages() const {return 2;}
+
 	//@}
 
 	protected:
@@ -186,7 +190,7 @@ class INET_API httptBrowserBase : public httptNodeBase
 		/** Generate a random HTTP request -- used in case we dont care which page is requested */
 		cMessage* generateRandomPageRequest(string www, bool bad=false, int size=0);
 		/** Generate a resource request, e.g. for an image or css document */
-		cMessage* generateResourceRequest(string www, string resource="", int serial=0, bool bad=false, int size=0);		
+		cMessage* generateResourceRequest(string www, string resource="", int serial=0, bool bad=false, int size=0);
 		//@}
 
 		//* Read scripted events from file. Triggered if the script file parameter is specified in the initialization file. */
