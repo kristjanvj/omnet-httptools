@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -27,7 +27,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // ***************************************************************************
- 
+
 
 #ifndef __httptNodeBase_H_
 #define __httptNodeBase_H_
@@ -65,16 +65,16 @@ typedef deque<cMessage*> MESSAGE_QUEUE_TYPE;
  * @see httptServerBase
  *
  * @author Kristjan V. Jonsson (kristjanvj@gmail.com)
- * @version 0.9
+ * @version 1.0
  */
 class httptNodeBase : public cSimpleModule
 {
 	protected:
 		/** Log level 2: Debug, 1: Info; 0: Errors and warnings only */
-		int ll; 
-		
+		int ll;
+
 		/** The WWW name of the node. */
-		string wwwName; 
+		string wwwName;
 		/** The listening port of the node. Really only applies to servers. */
 		int port; // @todo Move to server base class?
 
@@ -82,7 +82,7 @@ class httptNodeBase : public cSimpleModule
 		unsigned long linkSpeed;
 
 		/** The http protocol. http/1.0: 10 ; http/1.1: 11 */
-		int httpProtocol; 				 	
+		int httpProtocol;
 
 		/** The log file name for message generation events */
 		string logFileName;
@@ -95,12 +95,6 @@ class httptNodeBase : public cSimpleModule
 		/** Enable/disable of logging message contents (body) to the console. Only if m_bDisplayMessage is set */
 		bool m_bDisplayResponseContent;
 
-		// Basic statistics
-		long msgsSent;
-		long msgsRcvd;
-		long bytesSent;
-		long bytesRcvd;
-
 	public:
 		httptNodeBase();
 
@@ -110,8 +104,8 @@ class httptNodeBase : public cSimpleModule
 	protected:
 		/** @name Direct message passing utilities */
 		//@{
-		/** 
-		 * @brief Send a single message direct to the specified module. 
+		/**
+		 * @brief Send a single message direct to the specified module.
 		 * Transmission delay is automatically calculated from the size of the message. In addition, a constant delay
 		 * a random delay object may be specified. Those delays add to the total used to submit the message to the
 		 * OMNeT++ direct message passing mechanism.
