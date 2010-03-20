@@ -35,7 +35,9 @@
 //
 // HTTP message definitions for the HttpTools components.
 //
-// @version 0.9 
+// NEW: The module has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
+// @version 1.0 
 // @author  Kristjan V. Jonsson
 //
 // ----------------------------------------------------------------------------
@@ -43,51 +45,51 @@
 //
 // Base class for HTTP messages
 //
-// @author Kristjan V. Jonsson
-// @version 0.9
+// NEW: The message definition has been migrated to OMNeT++ 4.0 and the latest INET version.
 //
-message httptBaseMessage
+// @author Kristjan V. Jonsson
+// @version 1.0
+//
+packet httptBaseMessage
 {
-	properties:
-		omitGetVerb = true;
-	fields:
-		string targetUrl; 				// The target URL - request set for browsers, echoed by servers.
-		string originatorUrl="";		// The originator URL. Only applicable for servers.
-		int protocol = 11; 				// 10 for http/1.0, 11 for http/1.1.
-		bool keepAlive = true;			// The keep-alive header
-		int serial = 0;					// Convenience field which allows resource requests to be serially tagged for ease of analysis.
-		string heading="";				// The message heading - request string for requests, response for replies
-		string payload="";				// The payload field
-};
+    @omitGetVerb(true);
+    string targetUrl; 				// The target URL - request set for browsers, echoed by servers.
+    string originatorUrl = "";		// The originator URL. Only applicable for servers.
+    int protocol = 11; 				// 10 for http/1.0, 11 for http/1.1.
+    bool keepAlive = true;			// The keep-alive header
+    int serial = 0;					// Convenience field which allows resource requests to be serially tagged for ease of analysis.
+    string heading = "";				// The message heading - request string for requests, response for replies
+    string payload = "";				// The payload field
+}
 
 //
 // Message class for HTTP requests
 //
-// @author Kristjan V. Jonsson
-// @version 0.9
+// NEW: The message definition has been migrated to OMNeT++ 4.0 and the latest INET version.
 //
-message httptRequestMessage extends httptBaseMessage
+// @author Kristjan V. Jonsson
+// @version 1.0
+//
+packet httptRequestMessage extends httptBaseMessage
 {
-	properties:
-		omitGetVerb = true;			// Dont append get to generated getter methods.
-	fields:
-		bool badRequest = false;	// Set to true to simulate a bad request. Server answers w. 404.
-};
+    @omitGetVerb(true);			// Dont append get to generated getter methods.
+    bool badRequest = false;	// Set to true to simulate a bad request. Server answers w. 404.
+}
 
 //
 // Message class for HTTP replies
 //
-// @author Kristjan V. Jonsson
-// @version 0.9
+// NEW: The message definition has been migrated to OMNeT++ 4.0 and the latest INET version.
 //
-message httptReplyMessage extends httptBaseMessage
+// @author Kristjan V. Jonsson
+// @version 1.0
+//
+packet httptReplyMessage extends httptBaseMessage
 {
-	properties:
-		omitGetVerb = true;
-	fields:
-		int result=0; 				// e.g. 200 for OK, 404 for NOT FOUND.
-		int contentType=0;			// The content type: HTML pages, text or image resources.
-};
+    @omitGetVerb(true);
+    int result = 0; 				// e.g. 200 for OK, 404 for NOT FOUND.
+    int contentType = 0;			// The content type: HTML pages, text or image resources.
+}
 
 
 
