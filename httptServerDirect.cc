@@ -36,9 +36,12 @@ void httptServerDirect::initialize()
 {
 	httptServerBase::initialize();
 
+	EV_DEBUG << "Initializiing direct server component\n";
+
 	// Set the linkspeed
 	linkSpeed = par("linkSpeed");
 	if ( linkSpeed == 0 ) linkSpeed = 1024*1024; // Default is 1 MBit/s
+	// @todo Use the new units feature in the ini file and skip scaling here
 }
 
 void httptServerDirect::finish()
@@ -48,22 +51,22 @@ void httptServerDirect::finish()
 
 void httptServerDirect::handleMessage(cMessage *msg)
 {
-	EV_DEBUG << "Handling received message " << msg->name() << endl;
+	EV_DEBUG << "Handling received message " << msg->getName() << endl;
     if (msg->isSelfMessage())
     {
 		// Self messages are not used at the present
     }
 	else
 	{
-		httptNodeBase *senderModule = dynamic_cast<httptNodeBase*>(msg->senderModule());
+		httptNodeBase *senderModule = dynamic_cast<httptNodeBase*>(msg->getSenderModule());
 		if ( senderModule == NULL )
 		{
-			EV_ERROR << "Unspecified sender module in received message " << msg->name() << endl;
+			EV_ERROR << "Unspecified sender module in received message " << msg->getName() << endl;
 			delete msg;
 		}
 
-		EV_DEBUG << "Sender is " << senderModule->fullName() 
-				 << " in host " << senderModule->parentModule()->fullName() << endl;
+		EV_DEBUG << "Sender is " << senderModule->getFullName() 
+				 << " in host " << senderModule->getParentModule()->getFullName() << endl;
 		cMessage* reply = handleReceivedMessage(msg);
 		// Echo back to the requester
 		if ( reply!=NULL )

@@ -43,7 +43,7 @@
  * @see httptServerBase
  * @see httptServer
  *
- * @version 0.9
+ * @version 1.0
  * @author  Kristjan V. Jonsson
  */
 class INET_API httptServerDirect : public httptServerBase
