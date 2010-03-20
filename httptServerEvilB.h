@@ -47,7 +47,7 @@ using namespace std;
  *
  * @see httptServer
  *
- * @version 0.9
+ * @version 1.0
  * @author  Kristjan V. Jonsson
  *
  * @todo Refactor this code and the direct version to cut down on duplicated code.
