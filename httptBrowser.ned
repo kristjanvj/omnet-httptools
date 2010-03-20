@@ -29,6 +29,8 @@
 //
 // ----------------------------------------------------------------------------
 
+import inet.applications.tcpapp.TCPApp;
+
 //
 // httptBrowser
 //
@@ -38,19 +40,22 @@
 // See the API documentation for httptBrowserBase and httptBrowser for further details.
 // See the INET documentation for more information on StandardHost and the TCP/IP stack.
 //
-// @version 0.9 
+// NEW: The module has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
+// @version 1.0 
 // @author  Kristjan V. Jonsson
 //
-simple httptBrowser
-	parameters:
-		config: xml,				// The XML configuration file for the browser
-		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
-		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
-		logFile: string,			// Name of a browser log file. Browse events are appended, allowing sharing of file for multiple browsers.
-		scriptFile: string,			// The browsing script file. Blank to disable.
-		activationTime: numeric;	// The initial activation delay. Zero to disable.
-	gates:
-		in: tcpIn;
-		out: tcpOut;
-endsimple
+simple httptBrowser like TCPApp
+{
+    parameters:
+        int logLevel = default(0);						// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+        int httpProtocol = default(11);					// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+        string logFile = default("");					// Name of a browser log file. Browse events are appended, allowing sharing of file for multiple browsers.
+        string scriptFile = default("");				// The browsing script file. Blank to disable.
+        double activationTime @unit("s") = default(0s);	// The initial activation delay. Zero to disable.
+        xml config;										// The XML config file        
+    gates:
+        input tcpIn;
+        output tcpOut;
+}
 

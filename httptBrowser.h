@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -27,7 +27,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // ***************************************************************************
- 
+
 
 #ifndef __httptBrowserDirect_H_
 #define __httptBrowserDirect_H_
@@ -37,10 +37,10 @@
 #include "IPAddressResolver.h"
 #include "httptBrowserBase.h"
 
-/** 
- * @brief Data structure used to keep state for each opened socket 
+/**
+ * @brief Data structure used to keep state for each opened socket
  *
- * An instance of this struct is created for each opened socket and assigned to 
+ * An instance of this struct is created for each opened socket and assigned to
  * it as a myPtr. See the TCPSocket::CallbackInterface methods of httptBrowser for more
  * details.
  *
@@ -58,15 +58,15 @@ struct SOCK_DATA_STRUCT
  *
  * A simulated browser module for OMNeT++.
  *
- * The component is designed to plug into the existing INET StandardHost module as a 
- * tcpApp. See the INET documentation and examples for details. 
- * 
- * This component uses the TCP/IP modeling of the INET framework for transport. 
+ * The component is designed to plug into the existing INET StandardHost module as a
+ * tcpApp. See the INET documentation and examples for details.
+ *
+ * This component uses the TCP/IP modeling of the INET framework for transport.
  * Specifically, the TCPSocket class is used to interface with the TCP component from the INET framework.
  * A light-weight module which uses direct message passing is also available (httptBrowserDirect).
  *
  * @author Kristjan V. Jonsson (kristjanvj@gmail.com)
- * @version 0.9
+ * @version 1.0
  *
  * @see httptBrowserBase
  * @see httptBrowserDirect
@@ -75,23 +75,29 @@ class INET_API httptBrowser : public httptBrowserBase, public TCPSocket::Callbac
 {
 	protected:
 		TCPSocketMap sockCollection; 	//> List of active sockets
-		unsigned long numBroken;	 	//> Counter for the number of broken connections 
+		unsigned long numBroken;	 	//> Counter for the number of broken connections
 		unsigned long socketsOpened;	//> Counter for opened sockets
+
+		SOCK_DATA_STRUCT *pendingSocket;
 
 	public:
 		httptBrowser(); //* Constructor. Initializes counters */
+		virtual ~httptBrowser();
 
 	/** @name cSimpleModule redefinitions */
 	//@{
 	protected:
 		/** @brief Initialization of the component and startup of browse event scheduling */
-		virtual void initialize();
+		virtual void initialize(int stage);
 
 		/** @brief Report final statistics */
 		virtual void finish();
 
 		/** @brief Handle incoming messages */
 		virtual void handleMessage(cMessage *msg);
+
+		/** @brief Returns the number of initialization stages. Two required. */
+//		int numInitStages() const {return 2;}
 	//@}
 
 	/** @name Implementations of pure virtual send methods */
@@ -109,13 +115,13 @@ class INET_API httptBrowser : public httptBrowserBase, public TCPSocket::Callbac
 		/** @brief Sends a number of queued messages to the specified server */
 		virtual void sendRequestsToServer( string www, MESSAGE_QUEUE_TYPE queue );
 	//@}
-	
+
 	/** @name TCPSocket::CallbackInterface callback methods */
 	//@{
 	protected:
 		/** @brief Handler for socket established event.
 		 *	Called by the socket->processMessage(msg) handler call in handleMessage.
-         *  The pending messages for the socket are transmitted in the order queued. The socket remains 
+         *  The pending messages for the socket are transmitted in the order queued. The socket remains
          *  open after the handler has completed. A counter for pending messages is incremented for each
          *  request sent.
 		 */
@@ -126,7 +132,7 @@ class INET_API httptBrowser : public httptBrowserBase, public TCPSocket::Callbac
 		 *  virtual method of the parent class. The counter for pending replies is decremented for each one handled.
          *  Close is called on the socket once the counter reaches zero.
 		 */
-		virtual void socketDataArrived(int connId, void *yourPtr, cMessage *msg, bool urgent);
+		virtual void socketDataArrived(int connId, void *yourPtr, cPacket *msg, bool urgent);
 
 		/** @brief Handler for the socket closed by peer event
 		 *	Called by the socket->processMessage(msg) handler call in handleMessage.
@@ -138,7 +144,7 @@ class INET_API httptBrowser : public httptBrowserBase, public TCPSocket::Callbac
 		 */
 		virtual void socketClosed(int connId, void *yourPtr);
 
-		/** @brief socket failure handler 
+		/** @brief socket failure handler
 		 *  This method does nothing but reporting and statistics collection at this time.
 		 *  @todo Implement reconnect if necessary. See the INET demos.
 		 */
@@ -146,9 +152,8 @@ class INET_API httptBrowser : public httptBrowserBase, public TCPSocket::Callbac
 
 		/** @brief socket status arrived handler
 		 *	Called by the socket->processMessage(msg) handler call in handleMessage.
-		 *  Disregarded at this time.
 		 */
-		virtual void socketStatusArrived(int connId, void *yourPtr, TCPStatusInfo *status) {delete status;}
+		virtual void socketStatusArrived(int connId, void *yourPtr, TCPStatusInfo *status);
 	//@}
 
 	/** @name Socket establishment and data submission */
@@ -159,7 +164,7 @@ class INET_API httptBrowser : public httptBrowserBase, public TCPSocket::Callbac
  		 *  stored as a myPtr with the socket. The message is transmitted once the socket is established, signaled
 		 *  by a call to socketEstablished.
 		 */
-		void submitToSocket( const char* moduleName,int connectPort, cMessage *msg );
+		void submitToSocket( const char* moduleName, int connectPort, cMessage *msg );
 
 		/** @brief Establishes a socket and assigns a queue of messages to be transmitted.
 		 *  Same as the overloaded version, except a number of messages are queued for transmission. The same socket
