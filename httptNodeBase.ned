@@ -32,19 +32,22 @@
 //
 // httptNodeBase
 //
-// @version 0.9 
-// @author  Kristjan V. Jonsson
+// NEW: The module has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
+// @author Kristjan V. Jonsson
+// @version 1.0
 //
 simple httptNodeBase
-	parameters:
-		address: string,
-		port: numeric const,
-		config: xml,
-		logLevel: numeric,
-		httpProtocol: numeric,
-		linkSpeed: numeric;
-	gates:
-		in: tcpIn;
-		out: tcpOut;
-endsimple
+{
+    parameters:
+        string address;
+        int port;
+        xml config;
+        int logLevel;
+        int httpProtocol;
+        double linkSpeed;
+    gates:
+        input tcpIn;
+        output tcpOut;
+}
 
