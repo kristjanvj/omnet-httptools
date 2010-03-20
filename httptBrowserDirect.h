@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -27,7 +27,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // ***************************************************************************
- 
+
 
 #ifndef __httptBrowserDirect_H_
 #define __httptBrowserDirect_H_
@@ -39,13 +39,13 @@
  *
  * A simulated browser module for OMNeT++ simulations.
  *
- * This module implements direct message passing between modules. 
+ * This module implements direct message passing between modules.
  *
  * @see httptBrowserBase
  * @see httptBrowser
  *
  * @author Kristjan V. Jonsson (kristjanvj@gmail.com)
- * @version 0.9
+ * @version 1.0
  */
 class INET_API httptBrowserDirect : public httptBrowserBase
 {
@@ -53,13 +53,16 @@ class INET_API httptBrowserDirect : public httptBrowserBase
 	//@{
 	protected:
 		/** Initialization of the component and startup of browse event scheduling */
-		virtual void initialize();
+		virtual void initialize(int stage);
 
 		/** Report final statistics */
 		virtual void finish();
 
 		/** Handle incoming messages. See the parent class for details. */
 		virtual void handleMessage(cMessage *msg);
+
+		/** @brief Returns the number of initialization stages. Two required. */
+//		int numInitStages() const {return 2;}
 	//@}
 
 	/** @name Implementation of methods for sending requests to a server. See parent class for details. */
