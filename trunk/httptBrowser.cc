@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -38,14 +38,19 @@ httptBrowser::httptBrowser()
 	socketsOpened=0;
 }
 
-void httptBrowser::initialize()
+httptBrowser::~httptBrowser()
 {
-	EV_DEBUG << "Initializing HTTP direct browser component\n";
-	httptBrowserBase::initialize();
+	//
+}
+
+void httptBrowser::initialize(int stage)
+{
+	httptBrowserBase::initialize(stage);
+	EV_DEBUG << "Initializing HTTP browser component (sockets version)\n";
 }
 
 void httptBrowser::finish()
-{    
+{
 	// Call the parent class finish. Takes care of most of the reporting.
 	httptBrowserBase::finish();
 
@@ -63,22 +68,37 @@ void httptBrowser::finish()
 void httptBrowser::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage())
+    {
        	handleSelfMessages(msg);
+    }
 	else
 	{
+		EV_DEBUG << "Message received: " << msg->getName() << endl;
+
+		TCPCommand *ind = dynamic_cast<TCPCommand *>(msg->getControlInfo());
+		if (!ind)
+		{
+			EV_DEBUG << "No control info for the message" << endl;
+		}
+		else
+		{
+			int connId = ind->getConnId();
+			EV_DEBUG << "Connection ID: " << connId << endl;
+		}
+
 		// Locate the socket for the incoming message. One should definitely exist.
 		TCPSocket *socket = sockCollection.findSocketFor(msg);
-		if ( socket==NULL )	
+		if ( socket==NULL )
 		{
-			// Handle errors. @todo hard error?
-			EV_WARNING << "No socket found for message " << msg->name() << endl;
+			// Handle errors. @todo error instead of warning?
+			EV_WARNING << "No socket found for message " << msg->getName() << endl;
 			delete msg;
 			return;
 		}
-		// Submit to the socket handler. Calls the TCPSocket::CallbackInterface methods.		
+		// Submit to the socket handler. Calls the TCPSocket::CallbackInterface methods.
 		// Message is deleted in the socket handler
 		socket->processMessage(msg);
-	}	
+	}
 }
 
 void httptBrowser::sendRequestToServer( BROWSE_EVENT_ENTRY be )
@@ -138,14 +158,14 @@ void httptBrowser::sendRequestsToServer( string www, MESSAGE_QUEUE_TYPE queue )
 		return;
 	}
 
-	EV_DEBUG << "Sending requests to server " << www << " (" << szModuleName << ") on port " << connectPort 
+	EV_DEBUG << "Sending requests to server " << www << " (" << szModuleName << ") on port " << connectPort
 			 << ". Total messages queued are " << queue.size() << endl;
 	submitToSocket(szModuleName,connectPort,queue);
 }
 
 void httptBrowser::socketEstablished(int connId, void *yourPtr)
 {
-    EV_DEBUG << "Socket with id " << connId << " established" << endl;
+	EV_DEBUG << "Socket with id " << connId << " established" << endl;
 
 	socketsOpened++;
 
@@ -171,18 +191,17 @@ void httptBrowser::socketEstablished(int connId, void *yourPtr)
 	while( sockdata->messageQueue.size()!=0 )
 	{
 		msg = sockdata->messageQueue.back();
+		cPacket *pckt = check_and_cast<cPacket *>(msg);
 		sockdata->messageQueue.pop_back();
-		EV_DEBUG << "Submitting request " << msg->name() << " to socket " << connId << endl;
+		EV_DEBUG << "Submitting request " << msg->getName() << " to socket " << connId << ". size is " << pckt->getByteLength() << " bytes" << endl;
 		socket->send(msg);
 		sockdata->pending++;
-		msgsSent++;
-		bytesSent+=msg->byteLength();
 	}
 }
 
-void httptBrowser::socketDataArrived(int connId, void *yourPtr, cMessage *msg, bool urgent)
+void httptBrowser::socketDataArrived(int connId, void *yourPtr, cPacket *msg, bool urgent)
 {
-	EV_DEBUG << "Socket data arrived on connection " << connId << ": " << msg->name() << endl;
+	EV_DEBUG << "Socket data arrived on connection " << connId << ": " << msg->getName() << endl;
 	if ( yourPtr==NULL )
 	{
 		EV_ERROR << "socketDataArrivedfailure. Null pointer" << endl;
@@ -201,6 +220,12 @@ void httptBrowser::socketDataArrived(int connId, void *yourPtr, cMessage *msg, b
 	// Message deleted in handler - do not delete here!
 }
 
+void httptBrowser::socketStatusArrived(int connId, void *yourPtr, TCPStatusInfo *status)
+{
+	// This is obviously not used at the present time.
+	EV_INFO << "SOCKET STATUS ARRIVED. Socket: " << connId << endl;
+}
+
 void httptBrowser::socketPeerClosed(int connId, void *yourPtr)
 {
 	EV_DEBUG << "Socket " << connId << " closed by peer" << endl;
@@ -214,7 +239,7 @@ void httptBrowser::socketPeerClosed(int connId, void *yourPtr)
 	TCPSocket *socket = sockdata->socket;
 
     // close the connection (if not already closed)
-    if (socket->state()==TCPSocket::PEER_CLOSED)
+    if (socket->getState()==TCPSocket::PEER_CLOSED)
     {
         EV_INFO << "remote TCP closed, closing here as well. Connection id is " << connId << endl;
         socket->close();
@@ -240,7 +265,6 @@ void httptBrowser::socketClosed(int connId, void *yourPtr)
 
 void httptBrowser::socketFailure(int connId, void *yourPtr, int code)
 {
-	// @todo IMPLEMENT RETRIES. NEEDED IF LOSSLESS???
     EV_WARNING << "connection broken. Connection id " << connId << endl;
     numBroken++;
 
@@ -262,7 +286,7 @@ void httptBrowser::socketFailure(int connId, void *yourPtr, int code)
 	delete sockdata;
 }
 
-void httptBrowser::submitToSocket( const char* moduleName,int connectPort, cMessage *msg )
+void httptBrowser::submitToSocket( const char* moduleName, int connectPort, cMessage *msg )
 {
 	// Create a queue and push the single message
 	MESSAGE_QUEUE_TYPE queue;
@@ -271,7 +295,7 @@ void httptBrowser::submitToSocket( const char* moduleName,int connectPort, cMess
 	submitToSocket(moduleName,connectPort,queue);
 }
 
-void httptBrowser::submitToSocket( const char* moduleName,int connectPort, MESSAGE_QUEUE_TYPE &queue )
+void httptBrowser::submitToSocket( const char* moduleName, int connectPort, MESSAGE_QUEUE_TYPE &queue )
 {
 	// Dont do anything if the queue is empty.s
 	if ( queue.size()==0 )
