@@ -36,25 +36,28 @@
 // INET StandardHost module and plugs in as a tcpApp. The INET TCP/IP stack modeling is
 // used for transport. See the INET documentation for more details.
 //
+// NEW: The module has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
 // @see httptServerBase
 // @see httptServerDirect
 // @see DirectHost
 //
-// @version 0.9 
+// @version 1.0 
 // @author  Kristjan V. Jonsson
 //
-simple httptServer
-	parameters:
-		www: string,				// The WWW name of the server
-		port: numeric const,		// The listening port number
-		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
-		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
-		logFile: string,			// Name of server log file. Events are appended, allowing sharing of file for multiple servers.
-		siteDefinition: string,		// The site script file. Blank to disable.
-		config: xml,				// The XML configuration file for random sites
-		activationTime: numeric;	// The initial activation delay. Zero to disable.
-	gates:
-		in: tcpIn;
-		out: tcpOut;
-endsimple
+simple httptServer like inet.applications.tcpapp.TCPApp
+{
+    parameters:
+        string www = default("");						// The WWW name of the server
+        int port = default(80);							// The listening port number
+        int httpProtocol=default(11);					// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+        int logLevel = default(0);						// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+        string logFile = default("");					// Name of server log file. Events are appended, allowing sharing of file for multiple servers.
+        string siteDefinition = default("");			// The site script file. Blank to disable.
+        double activationTime @unit("s") = default(0s);	// The initial activation delay. Zero to disable.
+        xml config;										// The XML configuration file for random sites
+    gates:
+        input tcpIn;
+        output tcpOut;
+}
 

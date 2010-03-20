@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -27,7 +27,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // ***************************************************************************
- 
+
 #ifndef __httptServerSock_H_
 #define __httptServerSock_H_
 
@@ -36,14 +36,14 @@
 #include "httptServerBase.h"
 
 /**
- * @brief httptServerDirect module 
+ * @brief httptServerDirect module
  *
  * This module implements a flexible Web server. It is part of the HttpTools project
  * and should be used in conjunction with a number of clients running the httptBrowserDirect.
  *
  * @see httptBrowserDirect
  *
- * @version 0.9
+ * @version 1.0
  * @author  Kristjan V. Jonsson
  */
 class INET_API httptServer : public httptServerBase, public TCPSocket::CallbackInterface
@@ -70,7 +70,7 @@ class INET_API httptServer : public httptServerBase, public TCPSocket::CallbackI
 	/** @name TCPSocket::CallbackInterface methods */
 	//@{
 	protected:
-		/** 
+		/**
 		 * @brief handler for socket established events.
 		 * Only used to update statistics.
 		 */
@@ -78,20 +78,20 @@ class INET_API httptServer : public httptServerBase, public TCPSocket::CallbackI
 
 		/**
 		 * @brief handler for socket data arrived events
-		 * Dispatces the received message to the message handler in the base class and 
+		 * Dispatces the received message to the message handler in the base class and
  		 * finishes by deleting the received message.
 		 */
-		virtual void socketDataArrived(int connId, void *yourPtr, cMessage *msg, bool urgent);
+		virtual void socketDataArrived(int connId, void *yourPtr, cPacket *msg, bool urgent);
 
-		/** 
-		 * @brief handler for socket closed by peer event		
+		/**
+		 * @brief handler for socket closed by peer event
 		 * Does little apart from calling socket->close() to allow the TCPSocket object to close properly.
 		 */
 		virtual void socketPeerClosed(int connId, void *yourPtr);
 
-		/** 
-		 * @brief handler for socket closed event	
-		 * Cleanup the resources for the closed socket.	
+		/**
+		 * @brief handler for socket closed event
+		 * Cleanup the resources for the closed socket.
  		 */
 		virtual void socketClosed(int connId, void *yourPtr);
 
