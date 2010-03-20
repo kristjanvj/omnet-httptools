@@ -29,8 +29,8 @@
 //
 // ----------------------------------------------------------------------------
 
-import
-    "TCPApp.ned";
+import inet.applications.tcpapp.TCPApp;
+
 
 //
 // DirectHost
@@ -46,16 +46,19 @@ import
 // @see httptBrowserDirect
 //
 // @author Kristjan V. Jonsson (kristjanvj@gmail.com)
-// @version 0.9
+// @version 1.0
 //
 module DirectHost
+{
     parameters:
-        numTcpApps: numeric const,		// The number of tcpApps in the array
-        tcpAppType: string;				// The type of contained tcpApps
+        double numTcpApps = default(0);		// The number of tcpApps in the array
+        string tcpAppType = default("");				// The type of contained tcpApps
     submodules:
-        tcpApp: tcpAppType[numTcpApps] like TCPApp;
-            display: "p=163,67;i=block/app";
-    connections nocheck:
-endmodule
+        tcpApp[numTcpApps]: <tcpAppType> like TCPApp {
+            parameters:
+                @display("p=163,67;i=block/app");
+        }
+    connections allowunconnected:
+}
 
 
