@@ -33,6 +33,8 @@
 
 #include <vector>
 #include <string>
+#include <string.h>
+#include <stdlib.h>
 
 #if WIN32
 # include <io.h>
@@ -40,6 +42,7 @@
 #else
 # include <unistd.h>
 #endif
+
 
 /** @brief type of returned content. Used in http responses. */
 enum CONTENT_TYPE_ENUM {rt_unknown,rt_html_page,rt_image,rt_text};
