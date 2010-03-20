@@ -1,5 +1,7 @@
 #summary Build and installation instructions
 
+*NOTE: The instructions below are for the OMNeT++ 3.4 version and do not work for the new port to 4.0. New instructions coming soon. Try to create a new project in the OMNeT++ workspace, import INET and HttpTools. Everything should work fine!*
+
 = Installation and build =
 
 Note: The instructions are for a Linux system. 
