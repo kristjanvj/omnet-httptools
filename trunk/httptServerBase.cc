@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -35,14 +35,16 @@ void httptServerBase::initialize()
 {
 	ll = par("logLevel");
 
+	EV_DEBUG << "Initializing server component\n";
+
 	wwwName = (const char*)par("www");
 	if ( wwwName.size() == 0 )
 	{
 		wwwName = "www.";
-		wwwName += parentModule()->fullName();
+		wwwName += getParentModule()->getFullName();
 		wwwName += ".com";
 	}
-	EV_DEBUG << "Initializing HTTP server. Using WWW name " << wwwName << endl;    
+	EV_DEBUG << "Initializing HTTP server. Using WWW name " << wwwName << endl;
 	port = par("port");
 
 	logFileName = (const char*)par("logFile");
@@ -114,14 +116,9 @@ void httptServerBase::initialize()
 	registerWithController();
 
 	// Initialize statistics
-    msgsRcvd = msgsSent = bytesRcvd = bytesSent = 0;
 	htmlDocsServed = imgResourcesServed = textResourcesServed = badRequests = 0;
 
 	// Initialize watches
-    WATCH(msgsRcvd);
-    WATCH(msgsSent);
-    WATCH(bytesRcvd);
-    WATCH(bytesSent);
     WATCH(htmlDocsServed);
     WATCH(imgResourcesServed);
     WATCH(textResourcesServed);
@@ -132,17 +129,11 @@ void httptServerBase::initialize()
 
 void httptServerBase::finish()
 {
-    EV_SUMMARY << "Sent " << bytesSent << " bytes in " << msgsSent << " messages\n";
-    EV_SUMMARY << "Received " << bytesRcvd << " bytes in " << msgsRcvd << " messages\n";
 	EV_SUMMARY << "HTML documents served " << htmlDocsServed << "\n";
 	EV_SUMMARY << "Image resources served " << imgResourcesServed << "\n";
 	EV_SUMMARY << "Text resources served " << textResourcesServed << "\n";
 	EV_SUMMARY << "Bad requests " << badRequests << "\n";
 
-    recordScalar("messages.sent", msgsSent);
-    recordScalar("messages.rcvd", msgsRcvd);
-    recordScalar("bytes.sent", bytesSent);
-    recordScalar("bytes.rcvd", bytesRcvd);
     recordScalar("HTML.served", htmlDocsServed);
     recordScalar("images.served", imgResourcesServed);
     recordScalar("text.served", textResourcesServed);
@@ -155,17 +146,17 @@ void httptServerBase::updateDisplay()
 	{
 		char buf[1024];
 		sprintf( buf, "%ld", htmlDocsServed );
-		parentModule()->displayString().setTagArg("t",0,buf);
-	
+		getParentModule()->getDisplayString().setTagArg("t",0,buf);
+
 		if ( activationTime<=simTime() )
     	{
-			parentModule()->displayString().setTagArg("i2",0,"status/up");
-			parentModule()->displayString().setTagArg("i2",1,"green");
+			getParentModule()->getDisplayString().setTagArg("i2",0,"status/up");
+			getParentModule()->getDisplayString().setTagArg("i2",1,"green");
 		}
 		else
 		{
-			parentModule()->displayString().setTagArg("i2",0,"status/down");
-			parentModule()->displayString().setTagArg("i2",1,"red");
+			getParentModule()->getDisplayString().setTagArg("i2",0,"status/down");
+			getParentModule()->getDisplayString().setTagArg("i2",1,"red");
 		}
 	}
 }
@@ -179,16 +170,14 @@ void httptServerBase::handleMessage(cMessage *msg)
 cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 {
 	httptRequestMessage *request = check_and_cast<httptRequestMessage *>(msg);
-	if (request==NULL) error("Message (%s)%s is not a valid request", msg->className(), msg->name());
+	if (request==NULL) error("Message (%s)%s is not a valid request", msg->getClassName(), msg->getName());
 
-	EV_DEBUG << "Handling received message " << msg->name() << ". Target URL: " << request->targetUrl() << endl;
+	EV_DEBUG << "Handling received message " << msg->getName() << ". Target URL: " << request->targetUrl() << endl;
 
-	msgsRcvd++;
-	bytesRcvd += request->byteLength();
 	logRequest(request);
-			
+
 	simtime_t processingDelay = 0;
-	
+
 	bool recipientError=false;
 	if ( extractServerName(request->targetUrl()) != wwwName )
 	{
@@ -201,7 +190,7 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 
 	// Parse the request string on spaces
 	cStringTokenizer tokenizer = cStringTokenizer(request->heading()," ");
-	std::vector<string> res = tokenizer.asVector();	
+	std::vector<string> res = tokenizer.asVector();
 	if ( res.size() != 3 )
 	{
 		EV_ERROR << "Invalid request string: " << request->heading() << endl;
@@ -213,8 +202,8 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	if ( request->badRequest() )
 	{
 		// Bad requests get a 404 reply.
-		EV_ERROR << "Bad request - bad flag set. Message: " << request->name() << endl;
-		replymsg = generateErrorReply(request,404);		
+		EV_ERROR << "Bad request - bad flag set. Message: " << request->getName() << endl;
+		replymsg = generateErrorReply(request,404);
 	}
 	else if ( res[0] == "GET" )
 	{
@@ -224,7 +213,7 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 	{
 		EV_ERROR << "Unsupported request type " << res[0] << " for " << request->heading() << endl;
 		replymsg = generateErrorReply(request,400);
-	}	
+	}
 
 	if ( replymsg!=NULL )
 		logResponse(replymsg);
@@ -234,7 +223,7 @@ cMessage* httptServerBase::handleReceivedMessage( cMessage *msg )
 
 httptReplyMessage* httptServerBase::handleGetRequest( httptRequestMessage *request, string resource )
 {
-	EV_DEBUG << "Handling GET request " << request->name() << " resource: " << resource << endl;
+	EV_DEBUG << "Handling GET request " << request->getName() << " resource: " << resource << endl;
 
 	resource = trimLeft(resource,"/");
 	vector<string> req = parseResourceName(resource);
@@ -269,14 +258,14 @@ httptReplyMessage* httptServerBase::handleGetRequest( httptRequestMessage *reque
 				}
 			}
 		}
-		return generateDocument(request,resource.c_str());	
+		return generateDocument(request,resource.c_str());
 	}
 	else if ( cat==rt_text || cat==rt_image )
 	{
 		if ( scriptedMode && resources.find(resource)==resources.end() )
 		{
 			EV_ERROR << "Resource not found: " << resource << endl;
-			return generateErrorReply(request,404); 
+			return generateErrorReply(request,404);
 		}
 		return generateResourceMessage(request,resource,cat);
 	}
@@ -289,40 +278,40 @@ httptReplyMessage* httptServerBase::handleGetRequest( httptRequestMessage *reque
 
 httptReplyMessage* httptServerBase::generateDocument( httptRequestMessage *request, const char* resource, int size )
 {
-	EV_DEBUG << "Generating HTML document for request " << request->name() << " from " << request->senderModule()->name() << endl;
+	EV_DEBUG << "Generating HTML document for request " << request->getName() << " from " << request->getSenderModule()->getName() << endl;
 
-	char szReply[512]; 
+	char szReply[512];
 	sprintf(szReply,"HTTP/1.1 200 OK (%s)",resource);
 	httptReplyMessage* replymsg = new httptReplyMessage(szReply);
 	replymsg->setHeading("HTTP/1.1 200 OK");
 	replymsg->setOriginatorUrl(wwwName.c_str());
 	replymsg->setTargetUrl(request->originatorUrl());
-	replymsg->setProtocol(request->protocol());           
+	replymsg->setProtocol(request->protocol());
 	replymsg->setSerial(request->serial());
 	replymsg->setResult(200);
 	replymsg->setContentType(rt_html_page); // Emulates the content-type header field
 	replymsg->setKind(HTTPT_RESPONSE_MESSAGE);
 
 	if ( scriptedMode )
-	{	
+	{
 		replymsg->setPayload(htmlPages[resource].body.c_str());
 		size = htmlPages[resource].size;
 	}
 	else
 	{
-		replymsg->setPayload(generateBody().c_str()); 
+		replymsg->setPayload(generateBody().c_str());
 	}
-	
+
 	if ( size==0 )
 	{
 		EV_DEBUG << "Using random distribution for page size" << endl;
 		size = (int)rdHtmlPageSize->get();
 	}
 
-	replymsg->setByteLength(size);	
-	EV_DEBUG << "Serving a HTML document of length " << replymsg->byteLength() << " bytes" << endl;	
+	replymsg->setByteLength(size);
+	EV_DEBUG << "Serving a HTML document of length " << replymsg->getByteLength() << " bytes" << endl;
 
-	htmlDocsServed++;			
+	htmlDocsServed++;
 
 	return replymsg;
 }
@@ -336,13 +325,13 @@ httptReplyMessage* httptServerBase::generateResourceMessage( httptRequestMessage
 	else if ( category==rt_image )
 		imgResourcesServed++;
 
-	char szReply[512]; 
+	char szReply[512];
 	sprintf(szReply,"HTTP/1.1 200 OK (%s)",resource.c_str());
 	httptReplyMessage* replymsg = new httptReplyMessage(szReply);
 	replymsg->setHeading("HTTP/1.1 200 OK");
 	replymsg->setOriginatorUrl(wwwName.c_str());
 	replymsg->setTargetUrl(request->originatorUrl());
-	replymsg->setProtocol(request->protocol());           
+	replymsg->setProtocol(request->protocol()); // MIGRATE40: kvj
 	replymsg->setSerial(request->serial());
 	replymsg->setResult(200);
 	replymsg->setContentType(category); // Emulates the content-type header field
@@ -361,14 +350,14 @@ httptReplyMessage* httptServerBase::generateErrorReply( httptRequestMessage *req
 	replymsg->setHeading(szErrStr);
 	replymsg->setOriginatorUrl(wwwName.c_str());
 	replymsg->setTargetUrl(request->originatorUrl());
-	replymsg->setProtocol(request->protocol());           
+	replymsg->setProtocol(request->protocol());  // MIGRATE40: kvj
 	replymsg->setSerial(request->serial());
 	replymsg->setResult(code);
 	replymsg->setByteLength((int)rdErrorMsgSize->get());
 	replymsg->setKind(HTTPT_RESPONSE_MESSAGE);
 
 	badRequests++;
-	return replymsg;	
+	return replymsg;
 }
 
 string httptServerBase::generateBody()
@@ -381,12 +370,12 @@ string httptServerBase::generateBody()
 
 	char tempBuf[128];
 	for( int i=0; i<numImages; i++ )
-	{		
+	{
 		sprintf(tempBuf, "%s%.4d.%s\n", "IMG", i, "jpg");
 		result.append(tempBuf);
 	}
 	for( int i=0; i<numText; i++ )
-	{		
+	{
 		sprintf(tempBuf, "%s%.4d.%s\n", "TEXT", i, "txt");
 		result.append(tempBuf);
 	}
@@ -397,10 +386,10 @@ string httptServerBase::generateBody()
 void httptServerBase::registerWithController()
 {
 	// Find controller object and register
-	cModule * controller = simulation.systemModule()->submodule("controller");
+	cModule * controller = simulation.getSystemModule()->getSubmodule("controller");
 	if ( controller == NULL )
 		error("Controller module not found");
-	((httptController*)controller)->registerWWWserver(parentModule()->fullName(),wwwName.c_str(),port,INSERT_END,activationTime);
+	((httptController*)controller)->registerWWWserver(getParentModule()->getFullName(),wwwName.c_str(),port,INSERT_END,activationTime);
 }
 
 void httptServerBase::readSiteDefinition(string file)
@@ -413,12 +402,12 @@ void httptServerBase::readSiteDefinition(string file)
 		error("Could not open site definition file %s",file.c_str());
 
 	vector<string> siteFileSplit = splitFile(file);
-	string line;  
+	string line;
 	string key;
 	string htmlfile;
 	string body;
 	string value1;
-	string value2;	
+	string value2;
 	string sectionsub;
 	int size;
 	int linecount = 0;
@@ -434,7 +423,7 @@ void httptServerBase::readSiteDefinition(string file)
 		sectionsub=getDelimited(line,"[","]");
 		if ( sectionsub.size()!=0 )
 		{
-			// Section			
+			// Section
 			siteSection = sectionsub == "HTML";
 			resourceSection = sectionsub == "RESOURCES";
 		}
@@ -445,8 +434,8 @@ void httptServerBase::readSiteDefinition(string file)
 
 			if ( siteSection )
 			{
-				if ( res.size()<2 || res.size()>3 ) 
-					error("Invalid format of site configuration file '%s'. Site section, line (%d): %s", 
+				if ( res.size()<2 || res.size()>3 )
+					error("Invalid format of site configuration file '%s'. Site section, line (%d): %s",
 	 	 				   file.c_str(), linecount, line.c_str());
 				key=trimLeft(res[0],"/");
 				if ( key.size()==0 )
@@ -457,20 +446,20 @@ void httptServerBase::readSiteDefinition(string file)
 						error("Second root page found in site definition file %s, line (%d): %s",
 							  file.c_str(), linecount, line.c_str());
 				}
-				htmlfile=res[1];						
+				htmlfile=res[1];
 				body=readHtmlBodyFile(htmlfile,siteFileSplit[0]); // Pass in the path of the definition file. Page defs are relative to that.
 				size=0;
 				if ( res.size()>2 )
 				{
 					try
 					{
-						size = atoi(res[2].c_str());					
+						size = atoi(res[2].c_str());
 					}
 					catch(...)
 					{
-						error("Invalid format of site configuration file '%s'. Resource section, size, line (%d): %s", 
-							  file.c_str(), linecount, line.c_str());	
-					}	 
+						error("Invalid format of site configuration file '%s'. Resource section, size, line (%d): %s",
+							  file.c_str(), linecount, line.c_str());
+					}
 				}
 				EV_DEBUG << "Adding html page definition " << key << ". The page size is " << size << endl;
 				htmlPages[key].size=size;
@@ -478,20 +467,20 @@ void httptServerBase::readSiteDefinition(string file)
 			}
 			else if ( resourceSection )
 			{
-				if ( res.size()<2 || res.size()>3 ) 
-					error("Invalid format of site configuration file '%s'. Resource section, line (%d): %s", 
- 					   	  file.c_str(), linecount, line.c_str());		
+				if ( res.size()<2 || res.size()>3 )
+					error("Invalid format of site configuration file '%s'. Resource section, line (%d): %s",
+ 					   	  file.c_str(), linecount, line.c_str());
 				key=res[0];
 				value1=res[1];
 				try
 				{
-					size = atoi(value1.c_str());					
+					size = atoi(value1.c_str());
 				}
 				catch(...)
 				{
-					error("Invalid format of site configuration file '%s'. Resource section, size, line (%d): %s", 
-						  file.c_str(), linecount, line.c_str());	
-				}	 
+					error("Invalid format of site configuration file '%s'. Resource section, size, line (%d): %s",
+						  file.c_str(), linecount, line.c_str());
+				}
 
 				if ( res.size() > 2 )
 				{
@@ -503,8 +492,8 @@ void httptServerBase::readSiteDefinition(string file)
 			}
 			else
 			{
-				error("Invalid format of site configuration file '%s'. Unknown section, line (%d): %s", 
-					  file.c_str(), linecount, line.c_str());			  
+				error("Invalid format of site configuration file '%s'. Unknown section, line (%d): %s",
+					  file.c_str(), linecount, line.c_str());
 			}
 		}
 	}
