@@ -29,32 +29,38 @@
 //
 // ----------------------------------------------------------------------------
 
+import inet.applications.tcpapp.TCPApp;
+
 //
 // httptServerDirect
 //
 // A Web server module for OMNeT++ simulations and direct message passing between modules. 
 // This module is intended for use with the DirectHost module and plugs in as a tcpApp. 
 //
+//
+// NEW: The module has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
 // @see httptServerBase
 // @see httptServer
 // @see DirectHost
 //
-// @version 0.9 
+// @version 1.0 
 // @author  Kristjan V. Jonsson
 //
-simple httptServerDirect
-	parameters:
-		www: string,				// The WWW name of the server
-		port: numeric const,		// The listening port number
-		httpProtocol: numeric,		// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
-		logLevel: numeric,			// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
-		logFile: string,			// Name of server log file. Events are appended, allowing sharing of file for multiple servers.
-		siteDefinition: string,		// The site script file. Blank to disable.
-		config: xml,				// The XML configuration file for random sites
-		activationTime: numeric,	// The initial activation delay. Zero to disable.
-		linkSpeed: numeric;			// Used to model transmission delays.
-	gates:
-		in: tcpIn;
-		out: tcpOut;
-endsimple
+simple httptServerDirect like TCPApp
+{
+    parameters:
+        string www = default("");							// The WWW name of the server
+        int port = default(80);								// The listening port number
+        int httpProtocol = default(11);						// The http protocol: 10 for http/1.0, 11 for http/1.1. Not used at the present time.
+        int logLevel = default(0);							// The log level: 2: Debug, 1: Info; 0: Errors and warnings only
+        string logFile = default("");						// Name of server log file. Events are appended, allowing sharing of file for multiple servers.
+        string siteDefinition = default("");				// The site script file. Blank to disable.
+        double activationTime @unit(s) = default(0s);		// The initial activation delay. Zero to disable.
+        double linkSpeed @unit(Mbits) = default(11Mbits);	// Used to model transmission delays.
+        xml config;											// The XML configuration file for random sites        
+    gates:
+        input tcpIn;
+        output tcpOut;
+}
 
