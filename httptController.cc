@@ -1,11 +1,11 @@
 
 // ***************************************************************************
-// 
+//
 // HttpTools Project
 //// This file is a part of the HttpTools project. The project was created at
 // Reykjavik University, the Laboratory for Dependable Secure Systems (LDSS).
 // Its purpose is to create a set of OMNeT++ components to simulate browsing
-// behaviour in a high-fidelity manner along with a highly configurable 
+// behaviour in a high-fidelity manner along with a highly configurable
 // Web server component.
 //
 // Maintainer: Kristjan V. Jonsson (LDSS) kristjanvj@gmail.com
@@ -39,7 +39,7 @@ void httptController::initialize(int stage)
 	{
 		ll = par("logLevel");
 
-		EV_INFO << "Initializing HTTP controller. First stage" << endl; 
+		EV_INFO << "Initializing HTTP controller. First stage" << endl;
 
 		cXMLElement *rootelement = par("config").xmlValue();
 		if ( rootelement==NULL ) error("Configuration file is not defined");
@@ -61,18 +61,18 @@ void httptController::initialize(int stage)
 	else if ( stage==1 )
 	{
 		// Two stages are required to finalize the initialization of the random object for the site selection
-		// once the final number of web sites is known. 
+		// once the final number of web sites is known.
 
-		EV_INFO << "Initializing HTTP controller. Second stage" << endl; 
+		EV_INFO << "Initializing HTTP controller. Second stage" << endl;
 		EV_INFO << "Registered servers are " << webSiteList.size() << endl;
 		// Finish initialization of the probability distribution objects which depend on the number of servers.
-		if ( rdServerSelection->type()==dt_uniform )
+		if ( rdServerSelection->getType()==dt_uniform )
 			((rdUniform*)rdServerSelection)->setEnd(webSiteList.size());
-		else if ( rdServerSelection->type()==dt_zipf )
+		else if ( rdServerSelection->getType()==dt_zipf )
 			((rdZipf*)rdServerSelection)->setn(webSiteList.size());
-		
+
 		EV_DEBUG << "Server selection probability distribution: " << rdServerSelection->toString() << endl;
-		
+
 		string optionsfile = (const char*)par("events");
 		string optionssection = (const char*)par("eventsSection");
 		if ( optionsfile.size()!=0 )
@@ -81,7 +81,7 @@ void httptController::initialize(int stage)
 }
 
 void httptController::finish()
-{    
+{
 	EV_SUMMARY << "Invoking finish on the controller. Total lookups " << totalLookups << endl;
 
 	WEB_SERVER_ENTRY *en;
@@ -90,7 +90,7 @@ void httptController::finish()
 	{
 		en = (*iter).second;
 		EV_SUMMARY << "Server " << (*iter).first << ": Access count " << en->accessCount << endl;
-	}	
+	}
 
 	// Clean up the server references
 	for(iter = webSiteList.begin(); iter != webSiteList.end(); ++iter)
@@ -118,7 +118,7 @@ void httptController::registerWWWserver( const char* objectName, const char* www
 
 	string serverUrl = extractServerName(wwwName);
 
-	EV_DEBUG << "Registering www server: " << objectName << ", " << wwwName 
+	EV_DEBUG << "Registering www server: " << objectName << ", " << wwwName
 			 << " (" << port << "). Activation time is " << activationTime << endl;
 
 	if ( webSiteList.find(wwwName) != webSiteList.end() )
@@ -144,14 +144,14 @@ void httptController::registerWWWserver( const char* objectName, const char* www
 
 	int pos;
 	vector<WEB_SERVER_ENTRY*>::iterator begin = pickList.begin();
-	if ( rank==INSERT_RANDOM  ) 
-	{	
+	if ( rank==INSERT_RANDOM  )
+	{
 		if ( pickList.size()==0 )
 		{
 			pickList.push_back(en);
 		}
 		else
-		{	
+		{
 			pos = (int)uniform(0,pickList.size()-1);
 			pickList.insert(begin+pos,en);
 		}
@@ -185,7 +185,7 @@ cModule* httptController::getServerModule( const char* wwwName )
 
 	WEB_SERVER_ENTRY *en = webSiteList[serverUrl];
 	EV_DEBUG << "Got module object for www name " << wwwName << ": " << en->host << " (" << en->port << ")\n";
-	
+
 	totalLookups++;
 	en->accessCount++;
 
@@ -235,7 +235,7 @@ int httptController::getServerInfo( const char* wwwName, char* module, int &port
 
 	WEB_SERVER_ENTRY *en = webSiteList[serverUrl];
 	EV_DEBUG << "Got module object for www name " << wwwName << ": " << en->host << " (" << en->port << ")\n";
-	
+
 	totalLookups++;
 	en->accessCount++;
 
@@ -277,7 +277,7 @@ int httptController::getAnyServerInfo( char* wwwName, char* module, int &port )
 }
 
 cModule* httptController::getTcpApp(string node)
-{	
+{
 	int pos = node.find("[");
 	int rpos = node.rfind("]");
 	cModule * receiverModule = NULL;
@@ -286,18 +286,18 @@ cModule* httptController::getTcpApp(string node)
 		string id = node.substr(pos+1,pos-rpos-1);
 		string name = node.substr(0,pos);
 		int numid = atoi(id.c_str());
-		receiverModule = simulation.systemModule()->submodule(name.c_str(),numid);
+		receiverModule = simulation.getSystemModule()->getSubmodule(name.c_str(),numid);
 	}
 	else
 	{
-		receiverModule = simulation.systemModule()->submodule(node.c_str());
+		receiverModule = simulation.getSystemModule()->getSubmodule(node.c_str());
 	}
 
-	return receiverModule->submodule("tcpApp",0); // TODO: CHECK INDEX
+	return receiverModule->getSubmodule("tcpApp",0); // TODO: CHECK INDEX
 }
 
 void httptController::setSpecialStatus( const char* www, ServerStatus status, double p, double amortize )
-{	
+{
 	if ( webSiteList.find(www) == webSiteList.end() ) // The www name is not in the map
 	{
 		EV_ERROR << "Could not find module name for " << www << ". Cannot set special status" << endl;
@@ -332,8 +332,8 @@ void httptController::cancelSpecialStatus( const char* www )
 			en->statusSetTime=simTime();
 			en->serverStatus=ss_normal;
 			en->pvalue=0.0;
-			en->pamortize=0.0;			
-			specialList.erase(i);  
+			en->pamortize=0.0;
+			specialList.erase(i);
 			EV_DEBUG << "Special status for " << www << " cancelled" << endl;
 			break;
 		}
@@ -413,7 +413,7 @@ string httptController::listSpecials()
 	for(i=specialList.begin();i!=specialList.end();i++)
 	{
 		en=(*i);
-		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus 
+		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus
 			<< ";" << en->pvalue << ";" << en->pamortize << endl;
 	}
 	return str.str();
@@ -427,7 +427,7 @@ string httptController::listPickOrder()
 	for( i=pickList.begin(); i!=pickList.end(); i++ )
 	{
 		en=(*i);
-		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus 
+		str << en->name << ";" << en->host << ";" << en->port << ";" << en->serverStatus
 			<< ";" << en->pvalue << ";" << en->pamortize << endl;
 	}
 	return str.str();
@@ -446,8 +446,7 @@ void httptController::parseOptionsFile(string file, string section)
 	double pval;
 	double amortizeval;
 	simtime_t activationtime;
-	string line;  
-	int res;
+	string line;
 	int linecount = 0;
 	httptServerStatusUpdateMsg *statusChange;
 	while(!std::getline(tracefilestream, line).eof())
@@ -471,13 +470,13 @@ void httptController::parseOptionsFile(string file, string section)
 
 				cStringTokenizer tokenizer = cStringTokenizer(line.c_str(),";");
 				std::vector<string> res = tokenizer.asVector();
-				if ( res.size()!=5 ) 
+				if ( res.size()!=5 )
 					error("Invalid format of event config line in '%s' Line: '%s'", file.c_str(),line.c_str());
 				try
 				{
 					activationtime = (simtime_t)atof(res[0].c_str());
 					pval = atof(res[3].c_str());
-					amortizeval = atof(res[4].c_str()); 
+					amortizeval = atof(res[4].c_str());
 				}
 				catch(...)
 				{
@@ -506,7 +505,7 @@ WEB_SERVER_ENTRY* httptController::__getRandomServerInfo()
 	do
 	{
 		if (pspecial>0.0 && bernoulli(pspecial))
-		{		
+		{
 			// Pick from the special list. Each node can have different probabilities
 			en = selectFromSpecialList();
 			EV_DEBUG << "Selecting from special list. Got node " << en->name << endl;

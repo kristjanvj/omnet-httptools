@@ -36,14 +36,17 @@
 // server components. A single controller must exist at the scenario level in each
 // simulation.
 //
-// @version 0.9 
+// NEW: The module has been migrated to OMNeT++ 4.0 and the latest INET version.
+//
+// @version 1.0 
 // @author  Kristjan V. Jonsson
 //
 simple httptController
-	parameters:
-		logLevel: numeric,		// The log level: 2: Debug, 1: Info; 0: Errors and warnings only.
-		config: xml,			// XML configuration file.
-		events: string,			// Popularity modification events defintion file.
-		eventsSection: string;	// Section within the popularity modification file, if one is defined.
-endsimple
+{
+    parameters:
+        int logLevel = default(0);            // The log level: 2: Debug, 1: Info; 0: Errors and warnings only.
+        string events = default("");          // Popularity modification events defintion file.
+        string eventsSection = default("");   // Section within the popularity modification file, if one is defined.
+        xml config;                           // XML configuration file.        
+}
 

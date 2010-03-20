@@ -80,7 +80,7 @@ struct WEB_SERVER_ENTRY
  * @see httptBrowserBase
  * @see httptServerBase
  *
- * @version 0.9 
+ * @version 1.0
  * @author  Kristjan V. Jonsson 
  */
 class httptController : public cSimpleModule
@@ -163,7 +163,7 @@ class httptController : public cSimpleModule
 	//@}
 
 	protected:
-		/** @brief helper used by the server registration to locate the tcpApp module (server or browser) */
+		/** @brief helper used by the server registration to locate the tcpApp getModule(server or browser) */
 		cModule* getTcpApp(string node);
 
 		/** @brief Set special status of a WWW server. Triggered by an event message. */
