@@ -1,0 +1,28 @@
+**NOTE: The instructions below are for the OMNeT++ 3.4 version and do not work for the new port to 4.0. New instructions coming soon. Try to create a new project in the OMNeT++ workspace, import INET and HttpTools. Everything should work fine!**
+
+# Installation and build #
+
+Note: The instructions are for a Linux system.
+
+**Get the INET framework.** I am using version 20061020. Build according to the instructions
+```
+./makemake
+make
+```
+and try a few examples from Examples to see if everythin works according to plan.
+
+**Get the HttpTools source.** From within your INET directory, get the source from the subversion repository by entering
+```
+svn checkout http://omnet-httptools.googlecode.com/svn/trunk/ httptools
+```
+
+**Modify the makemakefiles file.** In your favorite editor, modify the _makemakefiles_ file in the INET root. Add the following lines to the end of the inetbase section:
+```
+cd httptools && $(MAKEMAKE) $(OPTS) -n -r $(ALL_INET_INCLUDES) -X Documentation -X Tests -X Examples 
+```
+
+**You will need to do a makemake and make again to build the INET framework with HttpTools**
+
+# Notes #
+
+The instructions given here work but are probably less than elegant. Input on better procedures for install and build would be greatly appreciated.
