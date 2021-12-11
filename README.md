@@ -11,7 +11,7 @@ The purpose of HttpTools project was to create a set of components for HTTP traf
 It was written as part of the author's Ph.D. dissertation work and actively used in a number of research projects and papers.
 The HttpTools project itself is described in
 
-Jonsson, K., HttpTools: A Toolkit for Simulation of Web Hosts in OMNeT++. In proceedings of the 2nd OMNeT++ workshop, Rome, Italy, 2009. A pdf of the paper is available in downloads.
+Jonsson, K., HttpTools: A Toolkit for Simulation of Web Hosts in OMNeT++. In proceedings of the 2nd OMNeT++ workshop, Rome, Italy, 2009. 
 
 ## The components
 
