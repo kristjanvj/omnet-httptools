@@ -29,7 +29,6 @@ Two hosts can be used for the browser and server components:
 
 * StandardHost from the INET framework should be used if a full network simulation using the TCP/IP stack is desired.
 * DirectHost is a part of HttpTools and should be used for hosts which use direct message passing.
-API reference and NED documentation for the model is coming soon. ASAP
 
 ## Get the source
 
